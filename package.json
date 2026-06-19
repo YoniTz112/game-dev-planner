@@ -4,6 +4,7 @@
   "description": "Planner web app with simple JSON backend",
   "main": "server.js",
   "scripts": {
+    "build": "echo 'skip build'",
     "start": "node server.js"
   },
   "dependencies": {
