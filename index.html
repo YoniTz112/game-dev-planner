@@ -434,6 +434,11 @@
             <option value="concluida">Concluídas</option>
           </select>
           <button class="btn btn-danger btn-sm" onclick="limparTudo()"> Limpar tudo</button>
+          <!-- Export / Import buttons -->
+          <button class="btn btn-outline btn-sm" onclick="exportAtividades()"> Exportar</button>
+          <button class="btn btn-outline btn-sm" onclick="importFromClipboard()"> Colar</button>
+          <button class="btn btn-outline btn-sm" onclick="triggerImportFile()"> Importar</button>
+          <input type="file" id="file-import" accept="application/json" style="display:none" onchange="handleImportFile(event)">
         </div>
       </div>
       <div id="lista-atividades"></div>
@@ -744,32 +749,30 @@
 
   let atividades = [];
 
-  async function apiGetAtividades() {
+  // Local-only persistence (no remote API required)
+  function apiGetAtividades() {
     try {
-      const res = await fetch('/api/atividades');
-      if (!res.ok) throw new Error('API error');
-      const data = await res.json();
-      return data;
-    } catch (e) {
-      console.warn('API GET falhou, usando localStorage', e);
       const local = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      return local;
+      return Promise.resolve(local);
+    } catch (e) {
+      console.warn('Falha ao ler localStorage, retornando array vazio', e);
+      return Promise.resolve([]);
     }
   }
 
-  async function apiSaveAtividades(arr) {
+  function apiSaveAtividades(arr) {
     try {
-      const res = await fetch('/api/atividades', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(arr)
-      });
-      if (!res.ok) throw new Error('API save failed');
-      return true;
-    } catch (e) {
-      console.warn('API POST falhou, salvando em localStorage', e);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-      return false;
+      return Promise.resolve(true);
+    } catch (e) {
+      console.warn('Falha ao salvar em localStorage', e);
+      return Promise.resolve(false);
     }
+  }
+
+  async function salvar() {
+    const ok = await apiSaveAtividades(atividades);
+    return ok;
   }
 
   // ========== SWITCH TAB ==========
@@ -830,11 +833,6 @@
     if (!confirm('Excluir TODAS as atividades? Esta ação não pode ser desfeita.')) return;
     atividades = [];
     salvar().then(renderAtividades);
-  }
-
-  async function salvar() {
-    const ok = await apiSaveAtividades(atividades);
-    return ok;
   }
 
   // ========== RENDER ==========
@@ -939,6 +937,103 @@
     const modal = document.getElementById('modal-sugestoes');
     if (e.target === modal) fecharSugestoes();
   });
+
+  // ========== EXPORT / IMPORT ==========
+  function exportAtividades() {
+    const dataStr = JSON.stringify(atividades, null, 2);
+    // try copy to clipboard (best-effort)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(dataStr).catch(() => {});
+    }
+    // trigger download
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'game-dev-atividades-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    alert('Exportação concluída. O JSON foi baixado e também copiado (se permitido).');
+  }
+
+  function triggerImportFile() {
+    document.getElementById('file-import').click();
+  }
+
+  function handleImportFile(e) {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = function() {
+      processImportedData(reader.result);
+      // reset input
+      e.target.value = '';
+    };
+    reader.readAsText(f);
+  }
+
+  async function importFromClipboard() {
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      alert('Leitura da área de transferência não suportada neste navegador. Use o botão Importar e selecione um arquivo JSON.');
+      return;
+    }
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text) { alert('Área de transferência vazia.'); return; }
+      processImportedData(text);
+    } catch (err) {
+      alert('Não foi possível acessar a área de transferência: ' + (err && err.message || err));
+    }
+  }
+
+  function processImportedData(text) {
+    let imported;
+    try {
+      imported = JSON.parse(text);
+    } catch (err) {
+      alert('JSON inválido. Verifique o arquivo/entrada e tente novamente.');
+      return;
+    }
+    if (!Array.isArray(imported)) {
+      alert('O JSON deve representar um array de atividades.');
+      return;
+    }
+    // basic validation (ensure at least a title exists)
+    const invalid = imported.some(it => !it || typeof it.titulo !== 'string' || it.titulo.trim() === '');
+    if (invalid) {
+      if (!confirm('Algumas atividades importadas parecem inválidas (faltando título). Deseja prosseguir mesmo assim?')) return;
+    }
+
+    const substituir = confirm('Deseja substituir todas as atividades atuais? (OK = substituir, Cancel = mesclar)');
+    if (substituir) {
+      atividades = imported.map(normalizeImported);
+    } else {
+      const existingIds = new Set(atividades.map(a => a.id));
+      const itemsToAdd = imported.map(it => {
+        // avoid id collisions
+        if (existingIds.has(it.id)) it.id = Date.now() + Math.floor(Math.random() * 100000);
+        return normalizeImported(it);
+      });
+      atividades = atividades.concat(itemsToAdd);
+    }
+    salvar().then(() => { renderAtividades(); alert('Importação concluída.'); });
+  }
+
+  function normalizeImported(it) {
+    return {
+      id: it.id || Date.now() + Math.floor(Math.random() * 100000),
+      titulo: it.titulo || '',
+      descricao: it.descricao || '',
+      responsavel: it.responsavel || 'ambos',
+      prioridade: it.prioridade || 'media',
+      categoria: it.categoria || 'organizacao',
+      data: it.data || '',
+      concluida: !!it.concluida,
+      criadaEm: it.criadaEm || new Date().toISOString()
+    };
+  }
 
   // ========== FORMULAR ROTINA ==========
   function gerarRotina() {
