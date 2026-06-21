@@ -600,84 +600,173 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Use UMD bundle so a global `supabase` is available when loaded via <script> -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
 
 <script>
   // ========== CONFIGURAÇÃO DO SUPABASE ==========
   const SUPABASE_URL = 'https://uhljjblxpeaseiqovwwu.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_hG3tXE2HGHL90ZPPmfD-5w_n-ta98xV';
 
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Try to initialize Supabase; if it fails, fall back to localStorage mode
+  let supabaseClient = null;
+  let USE_LOCAL = false;
+  try {
+    if (!window.supabase || !window.supabase.createClient) throw new Error('Supabase UMD não encontrado');
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (err) {
+    console.error('Falha ao inicializar Supabase — ativando modo local:', err);
+    // Only show a single alert if running in browser (avoid test environments)
+    try { alert('Aviso: não foi possível conectar ao serviço remoto. O app funcionará localmente (sem sincronização). Veja o console para mais detalhes.'); } catch (e) {}
+    USE_LOCAL = true;
+  }
 
-  // Mapeamento limpo dos slugs para o banco de dados
-  const SUGESTOES = [
-    { titulo: "Curso Unity Learn — Essentials", desc: "Complete o curso introdutório oficial da Unity.", resp: "yoni", cat: "aprendizado", prio: "alta" },
-    { titulo: "Esboçar lore principal do mundo", desc: "Escreva a história central, conflitos e ambientação.", resp: "schalom", cat: "lore", prio: "alta" },
-    { titulo: "Protótipo de movimento 3D", desc: "Implementar WASD + camera com mouse no Unity.", resp: "yoni", cat: "codigo", prio: "alta" },
-    { titulo: "Definir personagens principais", desc: "Criar perfis, backstory e motivações dos NPCs.", resp: "schalom", cat: "lore", prio: "media" },
-    { titulo: "Sistema básico de quests", desc: "Criar estrutura de missões no código.", resp: "yoni", cat: "codigo", prio: "alta" },
-    { titulo: "Escrever 3 quests iniciais", desc: "Missões introdutórias com descrição, objectives e diálogos.", resp: "schalom", cat: "lore", prio: "media" },
-    { titulo: "Modelar personagem principal no Blender", desc: "Primeiro modelo 3D do protagonista.", resp: "ambos", cat: "design", prio: "media" },
-    { titulo: "Sistema de inventário", desc: "Implementar coleta, armazenamento e uso de itens.", resp: "yoni", cat: "codigo", prio: "media" },
-    { titulo: "Mapear o mundo (documento)", desc: "Desenhar mapa conceitual: biomas, cidades, dungeons.", resp: "schalom", cat: "design", prio: "media" },
-    { titulo: "Sistema de diálogo", desc: "NPCs com falas e respostas usando Unity UI.", resp: "yoni", cat: "codigo", prio: "media" }
-  ];
+  // Local storage fallback key
+  const STORAGE_KEY = 'gameDevAtividades';
 
+  function localLoad() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { console.error('Erro ao ler localStorage', e); return []; }
+  }
+
+  function localSave(arr) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); return true; } catch (e) { console.error('Erro ao salvar localStorage', e); return false; }
+  }
+
+  // ========== VARIÁVEIS GLOBAIS ==========
   let atividades = [];
+  let filtros = {
+    responsavel: 'todos',
+    categoria: 'todos',
+    status: 'todos'
+  };
 
-  // ========== BUSCAR E SINCRONIZAR DO SUPABASE ==========
-  async function carregarDadosDoBanco() {
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .order('id', { ascending: false });
+  // ========== FUNÇÕES AUXILIARES ==========
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.querySelector('.tab-btn[onclick="switchTab(\'' + tab + '\')"]').classList.add('active');
+  }
 
-    if (error) {
-      console.error('Erro ao buscar dados do Supabase:', error);
+  function formatarData(data) {
+    if (!data) return '';
+    const op = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    return new Date(data).toLocaleDateString('pt-BR', op);
+  }
+
+  function calcularProgresso() {
+    const total = atividades.length;
+    const concluidas = atividades.filter(a => a.concluida).length;
+    const pct = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+    document.getElementById('progress-text').innerText = `${concluidas} de ${total} concluídas`;
+    document.getElementById('progress-pct').innerText = `${pct}%`;
+    document.getElementById('progress-fill').style.width = `${pct}%`;
+  }
+
+  // ========== RENDERIZAÇÃO ==========
+  function renderAtividades() {
+    const lista = document.getElementById('lista-atividades');
+    lista.innerHTML = '';
+
+    const filteredAtividades = atividades.filter(atv => {
+      const matchResp = (filtros.responsavel === 'todos' || atv.responsavel === filtros.responsavel);
+      const matchCat = (filtros.categoria === 'todos' || atv.categoria === filtros.categoria);
+      const matchStatus = (filtros.status === 'todos' || (filtros.status === 'concluida' && atv.concluida) || (filtros.status === 'pendente' && !atv.concluida));
+      return matchResp && matchCat && matchStatus;
+    });
+
+    if (filteredAtividades.length === 0) {
+      lista.innerHTML = `<div class="empty-state">
+        <h3>Nenhuma atividade encontrada</h3>
+        <p>Experimente ajustar os filtros ou adicionar uma nova atividade.</p>
+      </div>`;
       return;
     }
 
-    atividades = data.map(item => ({
-      id: item.id,
-      titulo: item.title,
-      descricao: item.description,
-      responsavel: item.assigned_to,
-      prioridade: item.priority,
-      categoria: item.category,
-      data: item.due_date,
-      concluida: item.is_completed
-    }));
+    for (let atv of filteredAtividades) {
+      const card = document.createElement('div');
+      card.className = 'atividade-card';
+      card.innerHTML = `
+        <div class="topo">
+          <div class="info">
+            <h3>${atv.titulo}</h3>
+            <p>${atv.descricao}</p>
+          </div>
+          <div class="acoes">
+            <button class="btn btn-sm btn-primary" onclick="toggleConcluir(${atv.id})">${atv.concluida ? '✔️ Feita' : '❌ Pendente'}</button>
+            <button class="btn btn-sm btn-danger" onclick="excluirAtividade(${atv.id})">🗑️ Excluir</button>
+            <button class="btn btn-sm btn-outline" onclick="editarAtividade(${atv.id})">✏️ Editar</button>
+          </div>
+        </div>
+        <div class="tags">
+          ${atv.responsavel !== 'ambos' ? `<span class="tag responsavel-${atv.responsavel}">${atv.responsavel === 'schalom' ? 'Schalom (Lore)' : 'Yoni (Técnico)'}</span>` : ''}
+          <span class="tag prioridade-${atv.prioridade}">Prioridade: ${atv.prioridade.charAt(0).toUpperCase() + atv.prioridade.slice(1)}</span>
+          <span class="tag categoria">${atv.categoria.charAt(0).toUpperCase() + atv.categoria.slice(1)}</span>
+        </div>
+        <div class="data">${atv.data ? `📅 ${formatarData(atv.data)}` : '📅 Sem data'}</div>
+      `;
+      lista.appendChild(card);
+    }
 
-    renderAtividades();
+    calcularProgresso();
   }
 
-  // ========== CONFIGURAR REALTIME ==========
+  // ========== CARREGAR DADOS (SUPABASE OU LOCAL) ==========
+  async function carregarDadosDoBanco() {
+    if (USE_LOCAL) {
+      atividades = localLoad();
+      renderAtividades();
+      return;
+    }
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('tasks')
+        .select('*')
+        .order('id', { ascending: false });
+
+      if (error) { console.error('Erro ao buscar dados do Supabase:', error); alert('Erro ao carregar dados remotos. Ver console.'); return; }
+
+      atividades = (data || []).map(item => ({
+        id: item.id,
+        titulo: item.title,
+        descricao: item.description,
+        responsavel: item.assigned_to,
+        prioridade: item.priority,
+        categoria: item.category,
+        data: item.due_date,
+        concluida: item.is_completed
+      }));
+
+      renderAtividades();
+    } catch (err) {
+      console.error('Erro inesperado ao carregar dados:', err);
+      alert('Erro inesperado ao carregar dados. Ver console.');
+    }
+  }
+
+  escutarMudancasEmTempoReal();
+
   function escutarMudancasEmTempoReal() {
-    supabase
-      .channel('mudancas-planner')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
-        console.log('Mudança detectada no banco de dados remoto!', payload);
-        carregarDadosDoBanco();
-      })
-      .subscribe();
+    if (USE_LOCAL || !supabaseClient) return;
+    try {
+      supabaseClient
+        .channel('mudancas-planner')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
+          console.log('Mudança detectada no banco de dados remoto!', payload);
+          carregarDadosDoBanco();
+        })
+        .subscribe();
+    } catch (err) { console.error('Erro ao configurar realtime:', err); }
   }
 
-  // ========== SWITCH TAB ==========
-  function switchTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
-    document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`).classList.add('active');
-    if (tab === 'rotina') renderAtividades();
-  }
-
-  // ========== CRUD CONECTADO AO SUPABASE ==========
+  // ========== AÇÕES ==========
   async function addAtividade(e) {
     e.preventDefault();
     const titulo = document.getElementById('input-titulo').value.trim();
     if (!titulo) return;
 
-    const { error } = await supabase.from('tasks').insert([{
+    const payload = {
       title: titulo,
       description: document.getElementById('input-descricao').value.trim(),
       assigned_to: document.getElementById('input-responsavel').value,
@@ -685,43 +774,78 @@
       category: document.getElementById('input-categoria').value,
       due_date: document.getElementById('input-data').value || null,
       is_completed: false
-    }]);
+    };
 
-    if (error) {
-      alert('Erro ao salvar no banco de dados!');
-      console.error(error);
+    if (USE_LOCAL) {
+      const atv = {
+        id: Date.now(),
+        titulo: payload.title,
+        descricao: payload.description,
+        responsavel: payload.assigned_to,
+        prioridade: payload.priority,
+        categoria: payload.category,
+        data: payload.due_date,
+        concluida: payload.is_completed,
+        criadaEm: new Date().toISOString()
+      };
+      atividades.unshift(atv);
+      localSave(atividades);
+      document.getElementById('form-atividade').reset();
+      document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
+      document.getElementById('input-titulo').focus();
+      renderAtividades();
       return;
     }
 
-    document.getElementById('form-atividade').reset();
-    document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
-    document.getElementById('input-titulo').focus();
-    carregarDadosDoBanco();
+    try {
+      const { error } = await supabaseClient.from('tasks').insert([payload]);
+      if (error) { alert('Erro ao salvar no banco remoto. Veja console.'); console.error(error); return; }
+      document.getElementById('form-atividade').reset();
+      document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
+      document.getElementById('input-titulo').focus();
+      carregarDadosDoBanco();
+    } catch (err) { console.error('Erro ao adicionar (remoto):', err); alert('Erro ao adicionar atividade remota. Veja console.'); }
   }
 
   async function toggleConcluir(id) {
     const atv = atividades.find(a => a.id === id);
     if (!atv) return;
 
-    const { error } = await supabase
-      .from('tasks')
-      .update({ is_completed: !atv.concluida })
-      .eq('id', id);
+    if (USE_LOCAL) {
+      atv.concluida = !atv.concluida;
+      localSave(atividades);
+      renderAtividades();
+      return;
+    }
 
-    if (error) console.error('Erro ao atualizar status:', error);
-    carregarDadosDoBanco();
+    try {
+      const { error } = await supabaseClient
+        .from('tasks')
+        .update({ is_completed: !atv.concluida })
+        .eq('id', id);
+      if (error) console.error('Erro ao atualizar status:', error);
+      carregarDadosDoBanco();
+    } catch (err) { console.error('Erro ao atualizar remoto:', err); }
   }
 
   async function excluirAtividade(id) {
     if (!confirm('Excluir esta atividade?')) return;
 
-    const { error } = await supabase
-      .from('tasks')
-      .delete()
-      .eq('id', id);
+    if (USE_LOCAL) {
+      atividades = atividades.filter(a => a.id !== id);
+      localSave(atividades);
+      renderAtividades();
+      return;
+    }
 
-    if (error) console.error('Erro ao deletar:', error);
-    carregarDadosDoBanco();
+    try {
+      const { error } = await supabaseClient
+        .from('tasks')
+        .delete()
+        .eq('id', id);
+      if (error) console.error('Erro ao deletar:', error);
+      carregarDadosDoBanco();
+    } catch (err) { console.error('Erro ao deletar remoto:', err); }
   }
 
   async function editarAtividade(id) {
@@ -730,224 +854,81 @@
     const novoTitulo = prompt('Editar título:', atv.titulo);
     if (!novoTitulo || novoTitulo.trim() === '') return;
 
-    const { error } = await supabase
-      .from('tasks')
-      .update({ title: novoTitulo.trim() })
-      .eq('id', id);
+    if (USE_LOCAL) {
+      atv.titulo = novoTitulo.trim();
+      localSave(atividades);
+      renderAtividades();
+      return;
+    }
 
-    if (error) console.error('Erro ao editar:', error);
-    carregarDadosDoBanco();
+    try {
+      const { error } = await supabaseClient
+        .from('tasks')
+        .update({ title: novoTitulo.trim() })
+        .eq('id', id);
+      if (error) console.error('Erro ao editar:', error);
+      carregarDadosDoBanco();
+    } catch (err) { console.error('Erro ao editar remoto:', err); }
   }
 
   async function limparTudo() {
-    if (!confirm('Excluir TODAS as atividades do banco? Esta ação não pode ser desfeita.')) return;
-    
-    // Corrigido para .gte('id', 0) para respeitar as travas de segurança de deleção em massa do Supabase
-    const { error } = await supabase.from('tasks').delete().gte('id', 0);
-    
-    if (error) console.error('Erro ao limpar tudo:', error);
-    carregarDadosDoBanco();
-  }
+    if (!confirm('Excluir TODAS as atividades? Esta ação não pode ser desfeita.')) return;
 
-  // ========== RENDER ==========
-  function renderAtividades() {
-    const container = document.getElementById('lista-atividades');
-    const filtroResp = document.getElementById('filtro-responsavel').value;
-    const filtroCat = document.getElementById('filtro-categoria').value;
-    const filtroStatus = document.getElementById('filtro-status').value;
-
-    let lista = [...atividades];
-
-    if (filtroResp !== 'todos') lista = lista.filter(a => a.responsavel === filtroResp);
-    if (filtroCat !== 'todos') lista = lista.filter(a => a.categoria === filtroCat);
-    if (filtroStatus === 'pendente') lista = lista.filter(a => !a.concluida);
-    if (filtroStatus === 'concluida') lista = lista.filter(a => a.concluida);
-
-    const catLabels = { aprendizado: 'Aprendizado', codigo: 'Código', lore: 'Lore', design: 'Design', audio: 'Áudio', testes: 'Testes', organizacao: 'Organização' };
-    const respLabels = { schalom: 'Schalom', yoni: 'Yoni', ambos: 'Ambos' };
-    const prioLabels = { alta: 'Alta', media: 'Média', baixa: 'Baixa' };
-
-    if (lista.length === 0) {
-      container.innerHTML = `<div class="empty-state"><h3>Nenhuma atividade aqui</h3><p>${atividades.length === 0 ? 'Crie sua primeira atividade ou clique em "Sugerir atividades" para começar!' : 'Nenhuma atividade corresponde aos filtros selecionados.'}</p></div>`;
-    } else {
-      container.innerHTML = lista.map(a => `
-        <div class="atividade-card ${a.concluida ? 'concluida' : ''}">
-          <div class="topo">
-            <div class="info">
-              <h3 style="text-decoration:${a.concluida ? 'line-through' : 'none'}">${a.titulo}</h3>
-              ${a.descricao ? `<p>${a.descricao}</p>` : ''}
-              <div class="tags">
-                <span class="tag responsavel-${a.responsavel}">${respLabels[a.responsavel] || a.responsavel}</span>
-                <span class="tag prioridade-${a.prioridade}">${prioLabels[a.prioridade] || a.prioridade}</span>
-                <span class="tag categoria">${catLabels[a.categoria] || a.categoria}</span>
-                ${a.data ? `<span class="tag">${new Date(a.data + 'T00:00:00').toLocaleDateString('pt-BR')}</span>` : ''}
-              </div>
-            </div>
-            <div class="acoes">
-              <button class="btn btn-sm ${a.concluida ? 'btn-outline' : 'btn-success'}" onclick="toggleConcluir(${a.id})">${a.concluida ? '↩ Reabrir' : '✓'}</button>
-              <button class="btn btn-sm btn-outline" onclick="editarAtividade(${a.id})">✎</button>
-              <button class="btn btn-sm btn-danger" onclick="excluirAtividade(${a.id})">✕</button>
-            </div>
-          </div>
-        </div>
-      `).join('');
+    if (USE_LOCAL) {
+      atividades = [];
+      localSave(atividades);
+      renderAtividades();
+      return;
     }
 
-    const total = atividades.length;
-    const concluidas = atividades.filter(a => a.concluida).length;
-    const pendentes = total - concluidas;
-    const pct = total === 0 ? 0 : Math.round((concluidas / total) * 100);
-
-    document.getElementById('stat-total').textContent = total;
-    document.getElementById('stat-concluidas').textContent = concluidas;
-    document.getElementById('stat-pendentes').textContent = pendentes;
-    document.getElementById('progress-text').textContent = `${concluidas} de ${total} concluídas`;
-    document.getElementById('progress-pct').textContent = `${pct}%`;
-    document.getElementById('progress-fill').style.width = `${pct}%`;
-  }
-
-  // ========== SUGESTOES ==========
-  function abrirSugestoes() {
-    const modal = document.getElementById('modal-sugestoes');
-    modal.style.display = 'flex';
-    const grid = document.getElementById('grid-sugestoes');
-    grid.innerHTML = SUGESTOES.map((s, i) => `
-      <div class="sugestao-item" onclick="adicionarSugestao(event, ${i})">
-        <h4>${s.titulo}</h4>
-        <p>${s.desc}</p>
-        <div class="tags" style="margin-top:6px;">
-          <span class="tag responsavel-${s.resp}">${s.resp === 'schalom' ? 'Schalom' : s.resp === 'yoni' ? 'Yoni' : 'Ambos'}</span>
-          <span class="tag categoria">${s.cat}</span>
-          <span class="tag prioridade-${s.prio}">${s.prio === 'alta' ? 'Alta' : s.prio === 'media' ? 'Média' : 'Baixa'}</span>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function fecharSugestoes() {
-    document.getElementById('modal-sugestoes').style.display = 'none';
-  }
-
-  async function adicionarSugestao(e, idx) {
-    if (e) e.stopPropagation();
-    const s = SUGESTOES[idx];
-    
-    const { error } = await supabase.from('tasks').insert([{
-      title: s.titulo,
-      description: s.desc,
-      assigned_to: s.resp,
-      priority: s.prio,
-      category: s.cat,
-      due_date: null,
-      is_completed: false
-    }]);
-
-    if (!error) {
-      fecharSugestoes();
-      carregarDadosDoBanco();
-    }
-  }
-
-  document.addEventListener('click', function(e) {
-    const modal = document.getElementById('modal-sugestoes');
-    const botaoSugerir = document.querySelector('button[onclick*="abrirSugestoes"]');
-    if (e.target === modal && e.target !== botaoSugerir) {
-      fecharSugestoes();
-    }
-  });
-
-  // ========== EXPORT / IMPORT ==========
-  function exportAtividades() {
-    const dataStr = JSON.stringify(atividades, null, 2);
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(dataStr).catch(() => {});
-    }
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'game-dev-atividades.json';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    alert('Exportação concluída.');
-  }
-
-  function triggerImportFile() { document.getElementById('file-import').click(); }
-  function handleImportFile(e) {
-    const f = e.target.files && e.target.files[0];
-    if (!f) return;
-    const reader = new FileReader();
-    reader.onload = function() { processImportedData(reader.result); e.target.value = ''; };
-    reader.readAsText(f);
-  }
-
-  async function importFromClipboard() {
-    if (!navigator.clipboard || !navigator.clipboard.readText) return;
     try {
-      const text = await navigator.clipboard.readText();
-      if (text) processImportedData(text);
-    } catch (err) { console.error(err); }
+      const { error } = await supabaseClient.from('tasks').delete().gte('id', 0);
+      if (error) console.error('Erro ao limpar tudo:', error);
+      carregarDadosDoBanco();
+    } catch (err) { console.error('Erro ao limpar remoto:', err); }
   }
 
   async function processImportedData(text) {
     let imported;
-    try { imported = JSON.parse(text); } catch (err) { return; }
-    if (!Array.isArray(imported)) return;
+    try { imported = JSON.parse(text); } catch (err) { alert('JSON inválido.'); return; }
+    if (!Array.isArray(imported)) { alert('O JSON deve ser um array de atividades.'); return; }
 
-    for (let item of imported) {
-      await supabase.from('tasks').insert([{
-        title: item.titulo || '',
-        description: item.descricao || '',
-        assigned_to: item.responsavel || 'ambos',
-        priority: item.prioridade || 'media',
-        category: item.categoria || 'organizacao',
-        due_date: item.data || null,
-        is_completed: !!item.concluida
-      }]);
+    if (USE_LOCAL) {
+      // mesclar sem duplicar ids
+      const existingIds = new Set(atividades.map(a => a.id));
+      const itemsToAdd = imported.map(it => ({
+        id: it.id || Date.now() + Math.floor(Math.random()*100000),
+        titulo: it.titulo || '',
+        descricao: it.descricao || '',
+        responsavel: it.responsavel || 'ambos',
+        prioridade: it.prioridade || 'media',
+        categoria: it.categoria || 'organizacao',
+        data: it.data || '',
+        concluida: !!it.concluida,
+        criadaEm: it.criadaEm || new Date().toISOString()
+      })).filter(it => it.titulo.trim() !== '');
+      atividades = atividades.concat(itemsToAdd);
+      localSave(atividades);
+      renderAtividades();
+      alert('Importação local concluída.');
+      return;
     }
-    carregarDadosDoBanco();
+
+    try {
+      for (let item of imported) {
+        await supabaseClient.from('tasks').insert([{
+          title: item.titulo || '',
+          description: item.descricao || '',
+          assigned_to: item.responsavel || 'ambos',
+          priority: item.prioridade || 'media',
+          category: item.categoria || 'organizacao',
+          due_date: item.data || null,
+          is_completed: !!item.concluida
+        }]);
+      }
+      carregarDadosDoBanco();
+    } catch (err) { console.error('Erro ao importar para remoto:', err); alert('Erro ao importar para o banco remoto. Veja console.'); }
   }
-
-  // ========== FORMULAR ROTINA ==========
-  function gerarRotina() {
-    const horas = parseInt(document.getElementById('rotina-horas').value);
-    const foco = document.getElementById('rotina-foco').value;
-    const areaVc = document.getElementById('rotina-area-vc').value;
-
-    const focoLabels = { aprendizado: 'aprendizado da ferramenta', prototipo: 'prototipação rápida', mecanicas: 'implementação de mecânicas', conteudo: 'criação de conteúdo', polimento: 'polimento e finalização' };
-    const areaLabels = { lore: 'escrever a lore e história principal', quests: 'criar quests e missões', personagens: 'desenvolver personagens e diálogos', mundo: 'desenhar o mapa e documentar o mundo', design: 'game design — regras e sistemas' };
-
-    const hrsVc = Math.round(horas * 0.35);
-    const hrsAmigo = Math.round(horas * 0.45);
-    const hrsJuntos = horas - hrsVc - hrsAmigo;
-    const dias = Math.max(1, Math.round(horas / 2));
-
-    const rotina = `\n╔══════════════════════════════════════╗\n║     ROTINA SEMANAL — ${horas}h/semana       ║\n╚══════════════════════════════════════╝\n\n FOCO DA SEMANA: ${focoLabels[foco].toUpperCase()}\n ─────────────────────────────────────\n\n VOCÊ (${hrsVc}h — Lore/Design)\n   • ${areaLabels[areaVc]}\n   • Revisar e organizar documentos do GDD\n   • Criar referências visuais (mood board)\n\n AMIGO (${hrsAmigo}h — Código)\n   • Trabalhar em ${focoLabels[foco]}\n   • Revisar e refatorar código existente\n   • Pesquisar soluções técnicas\n\n JUNTOS (${hrsJuntos}h — Alinhamento)\n   • Reunião de planejamento (início da semana)\n   • Revisão de progresso (meio da semana)\n   • Testar o que foi implementado\n\n RITMO SUGERIDO:\n   • ${dias} dias distribuídos na semana\n   • Sessões de ~${Math.round(horas/dias)}h cada\n   • Alternar blocks de foco com pausas de 10min\n\n DICA: Comece pequeno. Um protótipo simples\n rodando vale mais que um plano gigante no papel.\n `;
-
-    const resultado = document.getElementById('resultado-rotina');
-    resultado.textContent = rotina;
-    resultado.style.display = 'block';
-  }
-
-  // ========== CHECKLIST LOCAL ==========
-  document.querySelectorAll('#checklist-fundamentos input[type="checkbox"]').forEach(cb => {
-    const key = 'checklist_' + cb.parentElement.textContent.trim();
-    cb.checked = localStorage.getItem(key) === 'true';
-    if (cb.checked) cb.parentElement.classList.add('checked');
-    cb.addEventListener('change', function() {
-      const key = 'checklist_' + this.parentElement.textContent.trim();
-      localStorage.setItem(key, this.checked);
-      this.parentElement.classList.toggle('checked', this.checked);
-    });
-  });
-
-  // ========== INICIALIZAR APP ==========
-  document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
-
-  carregarDadosDoBanco();
-  escutarMudancasEmTempoReal();
 </script>
 </body>
 </html>
