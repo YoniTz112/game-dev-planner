@@ -632,12 +632,23 @@
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); return true; } catch (e) { console.error('Erro ao salvar localStorage', e); return false; }
   }
 
-  // ========== VARIÁVEIS GLOBAIS ==========
+// ========== VARIÁVEIS GLOBAIS ==========
   let atividades = [];
   let filtros = {
     responsavel: 'todos',
     categoria: 'todos',
     status: 'todos'
+  };
+
+  // 👇 O SEU EVENTO DE CARREGAMENTO FICA EXATAMENTE AQUI 👇
+  window.onload = async function() {
+    // Define a data de hoje no input de data por padrão
+    const inputData = document.getElementById('input-data');
+    if (inputData) {
+      inputData.value = new Date().toISOString().split('T')[0];
+    }
+    // Carrega os dados salvos do Supabase ou do LocalStorage
+    await carregarDadosDoBanco();
   };
 
   // ========== FUNÇÕES AUXILIARES ==========
