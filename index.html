@@ -178,8 +178,9 @@
     color: var(--text2);
     border: 1px solid var(--border);
   }
-  .tag.responsavel-você { border-color: var(--accent); color: var(--accent); }
-  .tag.responsavel-amigo { border-color: var(--accent3); color: #ff8a8a; }
+  /* IDs Ajustados de forma limpa para mapear as classes CSS sem erros de encoding */
+  .tag.responsavel-schalom { border-color: var(--accent); color: var(--accent); }
+  .tag.responsavel-yoni { border-color: var(--accent3); color: #ff8a8a; }
   .tag.responsavel-ambos { border-color: var(--accent2); color: var(--accent2); }
   .tag.prioridade-alta { background: rgba(255,107,107,0.2); color: #ff8a8a; border-color: transparent; }
   .tag.prioridade-media { background: rgba(255,193,7,0.2); color: #ffd54f; border-color: transparent; }
@@ -334,7 +335,6 @@
     <button class="tab-btn" onclick="switchTab('formular')"> Formular Rotina</button>
   </div>
 
-  <!-- ========== ABA ROTINA ========== -->
   <div id="tab-rotina" class="tab-content active">
     <div class="grid-2">
       <div class="card">
@@ -352,8 +352,8 @@
             <div class="form-group">
               <label>Responsável</label>
               <select id="input-responsavel">
-                <option value="você">Schalom (Lore/História)</option>
-                <option value="amigo">Yoni (Código/Técnico)</option>
+                <option value="schalom">Schalom (Lore/História)</option>
+                <option value="yoni">Yoni (Código/Técnico)</option>
                 <option value="ambos">Ambos</option>
               </select>
             </div>
@@ -386,7 +386,7 @@
           </div>
           <div class="flex gap-8" style="margin-top: 4px;">
             <button type="submit" class="btn btn-primary"> Adicionar</button>
-            <button type="button" class="btn btn-outline btn-sm" onclick="abrirSugestoes()"> Sugerir atividades</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); abrirSugestoes()"> Sugerir atividades</button>
           </div>
         </form>
       </div>
@@ -414,8 +414,8 @@
         <div class="flex gap-8 wrap">
           <select id="filtro-responsavel" onchange="renderAtividades()">
             <option value="todos">Todos responsáveis</option>
-            <option value="você">Schalom</option>
-            <option value="amigo">Yoni</option>
+            <option value="schalom">Schalom</option>
+            <option value="yoni">Yoni</option>
             <option value="ambos">Ambos</option>
           </select>
           <select id="filtro-categoria" onchange="renderAtividades()">
@@ -434,7 +434,6 @@
             <option value="concluida">Concluídas</option>
           </select>
           <button class="btn btn-danger btn-sm" onclick="limparTudo()"> Limpar tudo</button>
-          <!-- Export / Import buttons -->
           <button class="btn btn-outline btn-sm" onclick="exportAtividades()"> Exportar</button>
           <button class="btn btn-outline btn-sm" onclick="importFromClipboard()"> Colar</button>
           <button class="btn btn-outline btn-sm" onclick="triggerImportFile()"> Importar</button>
@@ -444,8 +443,7 @@
       <div id="lista-atividades"></div>
     </div>
 
-    <!-- Modal sugestoes -->
-    <div id="modal-sugestoes" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; display:none; align-items:center; justify-content:center; padding:20px;">
+    <div id="modal-sugestoes" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; padding:20px;">
       <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; max-width:700px; width:100%; max-height:80vh; overflow-y:auto; padding:24px;">
         <div class="flex-between mb-12">
           <h2 style="color:var(--accent2);"> Sugestões de Atividades</h2>
@@ -457,7 +455,6 @@
     </div>
   </div>
 
-  <!-- ========== ABA RECURSOS ========== -->
   <div id="tab-recursos" class="tab-content">
     <div class="card">
       <h2> Ferramentas & Recursos</h2>
@@ -546,94 +543,9 @@
           </div>
         </div>
       </div>
-
-      <div class="categoria-recursos">
-        <h3> Áudio & Música</h3>
-        <div class="grid-3">
-          <div class="recurso-card">
-            <span class="tag-recurso">Gratuito</span>
-            <h4>Audacity</h4>
-            <p>Editor de áudio gratuito. Grave diálogos, edite efeitos sonoros, converta formatos.</p>
-            <a class="link" href="https://www.audacityteam.org" target="_blank">audacityteam.org →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Ferramenta</span>
-            <h4>sfxr / jsfxr</h4>
-            <p>Gerador de efeitos sonoros retro. Crie sons de pulos, tiros, coletáveis em segundos.</p>
-            <a class="link" href="https://sfxr.me" target="_blank">sfxr.me →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Royalty Free</span>
-            <h4>freesound.org</h4>
-            <p>Biblioteca gigante de sons gratuitos. Efeitos, ambientes, passos, tudo sob licenças abertas.</p>
-            <a class="link" href="https://freesound.org" target="_blank">freesound.org →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Música</span>
-            <h4>BandLab</h4>
-            <p>DAW gratuita no navegador. Crie trilhas sonoras completas sem instalar nada.</p>
-            <a class="link" href="https://www.bandlab.com" target="_blank">bandlab.com →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Royalty Free</span>
-            <h4>Incompetech (Kevin MacLeod)</h4>
-            <p>Músicas royalty-free para usar nos protótipos. Atribuição simples.</p>
-            <a class="link" href="https://incompetech.com" target="_blank">incompetech.com →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Pago</span>
-            <h4>Bensound / Epidemic Sound</h4>
-            <p>Música de alta qualidade para jogos. Planos acessíveis com licença comercial.</p>
-            <a class="link" href="https://www.bensound.com" target="_blank">bensound.com →</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="categoria-recursos">
-        <h3> Organização & Versionamento</h3>
-        <div class="grid-3">
-          <div class="recurso-card">
-            <span class="tag-recurso">Essencial</span>
-            <h4>Git + GitHub</h4>
-            <p>Versionamento de código. Vocês dois podem trabalhar no mesmo projeto sem conflitos.</p>
-            <a class="link" href="https://github.com" target="_blank">github.com →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Colaboração</span>
-            <h4>Plastic SCM (Unity)</h4>
-            <p>Versionamento embutido no Unity Hub. Ótimo pra assets grandes e cenas.</p>
-            <a class="link" href="https://unity.com/solutions/version-control" target="_blank">Unity Version Control →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Gestão</span>
-            <h4>Notion</h4>
-            <p>Crie um workspace compartilhado pra documentar lore, sistemas, roadmap e reuniões.</p>
-            <a class="link" href="https://notion.so" target="_blank">notion.so →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Kanban</span>
-            <h4>Trello</h4>
-            <p>Quadro visual de tarefas. Ideal pra organizar sprints e ver o que cada um está fazendo.</p>
-            <a class="link" href="https://trello.com" target="_blank">trello.com →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Comunicação</span>
-            <h4>Discord</h4>
-            <p>Crie um servidor com canais pra código, arte, lore e reuniões de voz.</p>
-            <a class="link" href="https://discord.com" target="_blank">discord.com →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Inspiração</span>
-            <h4>itch.io</h4>
-            <p>Milhares de jogos independentes pra se inspirar. Muitos assets gratuitos também.</p>
-            <a class="link" href="https://itch.io" target="_blank">itch.io →</a>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
-  <!-- ========== ABA FORMULAR ROTINA ========== -->
   <div id="tab-formular" class="tab-content">
     <div class="grid-2">
       <div class="card">
@@ -683,39 +595,6 @@
           <div class="mes">Mês 3-4</div>
           <div class="desc"><strong>Mecânicas base</strong> — Interação com objetos, inventário básico, NPCs. Você cria o documento de design das quests e personagens principais.</div>
         </div>
-        <div class="milestone">
-          <div class="mes">Mês 5-6</div>
-          <div class="desc"><strong>Mundo & Conteúdo</strong> — Terrain, cenário, quests funcionais, sistema de diálogo. Você produz o conteúdo narrativo e texto do jogo.</div>
-        </div>
-        <div class="milestone">
-          <div class="mes">Mês 7-8</div>
-          <div class="desc"><strong>Sistemas avançados</strong> — Skill tree, progressão, combate, salvamento. Você integra a lore nos sistemas e cria side-quests.</div>
-        </div>
-        <div class="milestone">
-          <div class="mes">Mês 9-10</div>
-          <div class="desc"><strong>Polimento</strong> — UI, áudio, efeitos, otimização, ajustes finos. Você revisa toda a narrativa e adiciona detalhes.</div>
-        </div>
-        <div class="milestone">
-          <div class="mes">Mês 11-12</div>
-          <div class="desc"><strong>Testes & Lançamento</strong> — QA, correção de bugs, build final, publicação (itch.io / Steam).</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2> Checklist de Fundamentos</h2>
-      <p style="color:var(--text2); margin-bottom:8px;">Antes de começar a codar o jogo de verdade, é bom ter esses fundamentos:</p>
-      <div class="grid-2 checkbox-list" id="checklist-fundamentos">
-        <label><input type="checkbox"> Fazer o curso "Unity Essentials" na Unity Learn</label>
-        <label><input type="checkbox"> Criar um protótipo "Cube Collector" (seguir tutorial)</label>
-        <label><input type="checkbox"> Entender conceitos de GameObject, Component, Transform</label>
-        <label><input type="checkbox"> Aprender C# básico: variáveis, loops, funções, classes</label>
-        <label><input type="checkbox"> Configurar GitHub e conectar com Unity</label>
-        <label><input type="checkbox"> Definir o Game Design Document (GDD) básico</label>
-        <label><input type="checkbox"> Esboçar a lore principal e o mundo do jogo</label>
-        <label><input type="checkbox"> Baixar Blender e fazer um tutorial iniciante</label>
-        <label><input type="checkbox"> Configurar o ambiente: VS Code/Rider + Unity</label>
-        <label><input type="checkbox"> Assistir série "Unity 3D Movement" no YouTube</label>
       </div>
     </div>
   </div>
@@ -730,26 +609,18 @@
 
   const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // ========== DADOS INICIAIS DA SUGESTÃO ==========
+  // Mapeamento limpo dos slugs para o banco de dados
   const SUGESTOES = [
-    { titulo: "Curso Unity Learn — Essentials", desc: "Complete o curso introdutório oficial da Unity.", resp: "amigo", cat: "aprendizado", prio: "alta" },
-    { titulo: "Esboçar lore principal do mundo", desc: "Escreva a história central, conflitos e ambientação.", resp: "você", cat: "lore", prio: "alta" },
-    { titulo: "Protótipo de movimento 3D", desc: "Implementar WASD + camera com mouse no Unity.", resp: "amigo", cat: "codigo", prio: "alta" },
-    { titulo: "Definir personagens principais", desc: "Criar perfis, backstory e motivações dos NPCs.", resp: "você", cat: "lore", prio: "media" },
-    { titulo: "Sistema básico de quests", desc: "Criar estrutura de missões no código.", resp: "amigo", cat: "codigo", prio: "alta" },
-    { titulo: "Escrever 3 quests iniciais", desc: "Missões introdutórias com descrição, objectives e diálogos.", resp: "você", cat: "lore", prio: "media" },
+    { titulo: "Curso Unity Learn — Essentials", desc: "Complete o curso introdutório oficial da Unity.", resp: "yoni", cat: "aprendizado", prio: "alta" },
+    { titulo: "Esboçar lore principal do mundo", desc: "Escreva a história central, conflitos e ambientação.", resp: "schalom", cat: "lore", prio: "alta" },
+    { titulo: "Protótipo de movimento 3D", desc: "Implementar WASD + camera com mouse no Unity.", resp: "yoni", cat: "codigo", prio: "alta" },
+    { titulo: "Definir personagens principais", desc: "Criar perfis, backstory e motivações dos NPCs.", resp: "schalom", cat: "lore", prio: "media" },
+    { titulo: "Sistema básico de quests", desc: "Criar estrutura de missões no código.", resp: "yoni", cat: "codigo", prio: "alta" },
+    { titulo: "Escrever 3 quests iniciais", desc: "Missões introdutórias com descrição, objectives e diálogos.", resp: "schalom", cat: "lore", prio: "media" },
     { titulo: "Modelar personagem principal no Blender", desc: "Primeiro modelo 3D do protagonista.", resp: "ambos", cat: "design", prio: "media" },
-    { titulo: "Sistema de inventário", desc: "Implementar coleta, armazenamento e uso de itens.", resp: "amigo", cat: "codigo", prio: "media" },
-    { titulo: "Mapear o mundo (documento)", desc: "Desenhar mapa conceitual: biomas, cidades, dungeons.", resp: "você", cat: "design", prio: "media" },
-    { titulo: "Sistema de diálogo", desc: "NPCs com falas e respostas usando Unity UI.", resp: "amigo", cat: "codigo", prio: "media" },
-    { titulo: "Criar árvore de habilidades", desc: "Design das skills: nome, descrição, pré-requisitos.", resp: "você", cat: "design", prio: "baixa" },
-    { titulo: "Implementar skill tree", desc: "Codificar o sistema de progressão de habilidades.", resp: "amigo", cat: "codigo", prio: "baixa" },
-    { titulo: "Criar efeitos sonoros com sfxr", desc: "Sons de passos, coletar item, abrir porta.", resp: "ambos", cat: "audio", prio: "baixa" },
-    { titulo: "Trilha sonora inicial", desc: "Compor ou escolher músicas para o protótipo.", resp: "você", cat: "audio", prio: "baixa" },
-    { titulo: "Testar quests e relatar bugs", desc: "Jogar as missões implementadas e anotar problemas.", resp: "ambos", cat: "testes", prio: "media" },
-    { titulo: "Configurar GitHub + Unity", desc: "Repositório, .gitignore, branch strategy.", resp: "amigo", cat: "organizacao", prio: "alta" },
-    { titulo: "Criar GDD (Game Design Document)", desc: "Documentar visão, mecânicas, plataformas, público.", resp: "ambos", cat: "organizacao", prio: "alta" },
-    { titulo: "Sessão de brainstorming semanal", desc: "Reunião pra alinhar lore e código da semana.", resp: "ambos", cat: "organizacao", prio: "media" },
+    { titulo: "Sistema de inventário", desc: "Implementar coleta, armazenamento e uso de itens.", resp: "yoni", cat: "codigo", prio: "media" },
+    { titulo: "Mapear o mundo (documento)", desc: "Desenhar mapa conceitual: biomas, cidades, dungeons.", resp: "schalom", cat: "design", prio: "media" },
+    { titulo: "Sistema de diálogo", desc: "NPCs com falas e respostas usando Unity UI.", resp: "yoni", cat: "codigo", prio: "media" }
   ];
 
   let atividades = [];
@@ -871,7 +742,8 @@
   async function limparTudo() {
     if (!confirm('Excluir TODAS as atividades do banco? Esta ação não pode ser desfeita.')) return;
     
-    const { error } = await supabase.from('tasks').delete().neq('id', 0);
+    // Corrigido para .gte('id', 0) para respeitar as travas de segurança de deleção em massa do Supabase
+    const { error } = await supabase.from('tasks').delete().gte('id', 0);
     
     if (error) console.error('Erro ao limpar tudo:', error);
     carregarDadosDoBanco();
@@ -892,7 +764,7 @@
     if (filtroStatus === 'concluida') lista = lista.filter(a => a.concluida);
 
     const catLabels = { aprendizado: 'Aprendizado', codigo: 'Código', lore: 'Lore', design: 'Design', audio: 'Áudio', testes: 'Testes', organizacao: 'Organização' };
-    const respLabels = { você: 'Você', amigo: 'Amigo', ambos: 'Ambos' };
+    const respLabels = { schalom: 'Schalom', yoni: 'Yoni', ambos: 'Ambos' };
     const prioLabels = { alta: 'Alta', media: 'Média', baixa: 'Baixa' };
 
     if (lista.length === 0) {
@@ -944,7 +816,7 @@
         <h4>${s.titulo}</h4>
         <p>${s.desc}</p>
         <div class="tags" style="margin-top:6px;">
-          <span class="tag responsavel-${s.resp}">${s.resp === 'você' ? 'Você' : s.resp === 'amigo' ? 'Amigo' : 'Ambos'}</span>
+          <span class="tag responsavel-${s.resp}">${s.resp === 'schalom' ? 'Schalom' : s.resp === 'yoni' ? 'Yoni' : 'Ambos'}</span>
           <span class="tag categoria">${s.cat}</span>
           <span class="tag prioridade-${s.prio}">${s.prio === 'alta' ? 'Alta' : s.prio === 'media' ? 'Média' : 'Baixa'}</span>
         </div>
@@ -976,7 +848,6 @@
     }
   }
 
-  // Modificado para prevenir fechamento precoce por propagação do botão
   document.addEventListener('click', function(e) {
     const modal = document.getElementById('modal-sugestoes');
     const botaoSugerir = document.querySelector('button[onclick*="abrirSugestoes"]');
@@ -1053,7 +924,7 @@
     const hrsJuntos = horas - hrsVc - hrsAmigo;
     const dias = Math.max(1, Math.round(horas / 2));
 
-    const rotina = `\n╔══════════════════════════════════════╗\n║     ROTINA SEMANAL — ${horas}h/semana       ║\n╚══════════════════════════════════════╝\n\n FOCO DA SEMANA: ${focoLabels[foco].toUpperCase()}\n ─────────────────────────────────────\n\n VOCÊ (${hrsVc}h — Lore/Design)\n   • ${areaLabels[areaVc]}\n   • Revisar e organizar documentos do GDD\n   • Criar referências visuais (mood board)\n\n AMIGO (${hrsAmigo}h — Código)\n   • Trabalhar em ${focoLabels[foco]}\n   • Revisar e refatorar código existente\n   • Pesquisar soluções técnicas\n\n JUNTOS (${hrsJuntos}h — Alinhamento)\n   • Reunião de planejamento (início da semana)\n   • Revisão de progresso (meio da semana)\n   • Testar o que foi implementado\n\n RITMO SUGERIDO:\n   • ${dias} dias distribuídos na semana\n   • Sessões de ~${Math.round(horas/dias)}h cada\n   • Alternar blocos de foco com pausas de 10min\n\n DICA: Comece pequeno. Um protótipo simples\n rodando vale mais que um plano gigante no papel.\n `;
+    const rotina = `\n╔══════════════════════════════════════╗\n║     ROTINA SEMANAL — ${horas}h/semana       ║\n╚══════════════════════════════════════╝\n\n FOCO DA SEMANA: ${focoLabels[foco].toUpperCase()}\n ─────────────────────────────────────\n\n VOCÊ (${hrsVc}h — Lore/Design)\n   • ${areaLabels[areaVc]}\n   • Revisar e organizar documentos do GDD\n   • Criar referências visuais (mood board)\n\n AMIGO (${hrsAmigo}h — Código)\n   • Trabalhar em ${focoLabels[foco]}\n   • Revisar e refatorar código existente\n   • Pesquisar soluções técnicas\n\n JUNTOS (${hrsJuntos}h — Alinhamento)\n   • Reunião de planejamento (início da semana)\n   • Revisão de progresso (meio da semana)\n   • Testar o que foi implementado\n\n RITMO SUGERIDO:\n   • ${dias} dias distribuídos na semana\n   • Sessões de ~${Math.round(horas/dias)}h cada\n   • Alternar blocks de foco com pausas de 10min\n\n DICA: Comece pequeno. Um protótipo simples\n rodando vale mais que um plano gigante no papel.\n `;
 
     const resultado = document.getElementById('resultado-rotina');
     resultado.textContent = rotina;
