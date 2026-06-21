@@ -1,326 +1,252 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Game Dev Planner</title>
-<style>
-  :root {
-    --bg: #0f0f1a;
-    --surface: #1a1a2e;
-    --surface2: #252542;
-    --accent: #6c63ff;
-    --accent2: #00d4aa;
-    --accent3: #ff6b6b;
-    --text: #e0e0f0;
-    --text2: #8888aa;
-    --border: #2a2a45;
-    --shadow: 0 4px 20px rgba(0,0,0,0.4);
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 20px;
-  }
-  .app { max-width: 1100px; margin: 0 auto; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Dev Planner</title>
+  <style>
+    /* ========== VARIÁVEIS E BASE ========== */
+    :root {
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface2: #252542;
+      --accent: #6c63ff;
+      --accent2: #00d4aa;
+      --accent3: #ff6b6b;
+      --text: #e0e0f0;
+      --text2: #8888aa;
+      --border: #2a2a45;
+      --shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .app { max-width: 1100px; margin: 0 auto; }
 
-  header {
-    text-align: center;
-    padding: 30px 20px 20px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 24px;
-  }
-  header h1 {
-    font-size: 2rem;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  header p { color: var(--text2); margin-top: 6px; font-size: 0.95rem; }
+    /* ========== HEADER ========== */
+    header {
+      text-align: center;
+      padding: 30px 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p { color: var(--text2); margin-top: 6px; font-size: 0.95rem; }
 
-  .tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--surface);
-    border-radius: 12px;
-    padding: 4px;
-    margin-bottom: 24px;
-    border: 1px solid var(--border);
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 12px 16px;
-    border: none;
-    background: transparent;
-    color: var(--text2);
-    font-size: 0.95rem;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.2s;
-    font-weight: 500;
-  }
-  .tab-btn:hover { color: var(--text); background: var(--surface2); }
-  .tab-btn.active { background: var(--accent); color: #fff; }
+    /* ========== TABS ========== */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text2);
+      font-size: 0.95rem;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+    .tab-btn:hover { color: var(--text); background: var(--surface2); }
+    .tab-btn.active { background: var(--accent); color: #fff; }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+    /* ========== LAYOUT & CARDS ========== */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      color: var(--accent2);
+    }
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: var(--shadow);
-  }
-  .card h2 {
-    font-size: 1.2rem;
-    margin-bottom: 12px;
-    color: var(--accent2);
-  }
-  .card h2 i { margin-right: 8px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .flex { display: flex; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .gap-8 { gap: 8px; }
+    .wrap { flex-wrap: wrap; }
+    .mt-4 { margin-top: 4px; }
+    .mt-16 { margin-top: 16px; }
 
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    /* ========== FORMS ========== */
+    label { display: block; margin-bottom: 4px; color: var(--text2); font-size: 0.85rem; font-weight: 500; }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 0.9rem;
+      transition: border 0.2s;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 60px; }
+    .form-group { margin-bottom: 12px; }
 
-  label { display: block; margin-bottom: 4px; color: var(--text2); font-size: 0.85rem; font-weight: 500; }
-  input, select, textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text);
-    font-size: 0.9rem;
-    transition: border 0.2s;
-    font-family: inherit;
-  }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
-  textarea { resize: vertical; min-height: 60px; }
-  .form-group { margin-bottom: 12px; }
+    /* ========== BOTOES ========== */
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .btn-success { background: var(--accent2); color: #0f0f1a; }
+    .btn-success:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .btn-danger { background: var(--accent3); color: #fff; }
+    .btn-danger:hover { filter: brightness(1.15); }
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 
-  .btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
-  .btn-success { background: var(--accent2); color: #0f0f1a; }
-  .btn-success:hover { filter: brightness(1.15); transform: translateY(-1px); }
-  .btn-danger { background: var(--accent3); color: #fff; }
-  .btn-danger:hover { filter: brightness(1.15); }
-  .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
-  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    /* ========== PROGRESSO & ESTATÍSTICAS ========== */
+    .progress-bar {
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 8px 0 4px;
+    }
+    .progress-bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    .progress-text { font-size: 0.85rem; color: var(--text2); }
+    .stat-box { text-align: center; }
+    .stat-number { font-size: 1.4rem; font-weight: 700; }
+    .stat-label { font-size: 0.8rem; color: var(--text2); }
 
-  .flex { display: flex; }
-  .flex-between { display: flex; justify-content: space-between; align-items: center; }
-  .gap-8 { gap: 8px; }
-  .gap-12 { gap: 12px; }
-  .mt-12 { margin-top: 12px; }
-  .mb-12 { margin-bottom: 12px; }
-  .wrap { flex-wrap: wrap; }
+    /* ========== ATIVIDADES ========== */
+    .atividade-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+    .atividade-card:hover { border-color: var(--accent); }
+    .atividade-card.concluida { opacity: 0.55; border-left-color: var(--accent2); }
+    .atividade-card .topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .atividade-card .info h3 { font-size: 1rem; margin-bottom: 4px; }
+    .atividade-card .info p { color: var(--text2); font-size: 0.85rem; }
+    
+    .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .tag { font-size: 0.75rem; padding: 2px 10px; border-radius: 20px; background: var(--surface); color: var(--text2); border: 1px solid var(--border); }
+    .tag.responsavel-schalom { border-color: var(--accent); color: var(--accent); }
+    .tag.responsavel-yoni { border-color: var(--accent3); color: #ff8a8a; }
+    .tag.responsavel-ambos { border-color: var(--accent2); color: var(--accent2); }
+    .tag.prioridade-alta { background: rgba(255,107,107,0.2); color: #ff8a8a; border-color: transparent; }
+    .tag.prioridade-media { background: rgba(255,193,7,0.2); color: #ffd54f; border-color: transparent; }
+    .tag.prioridade-baixa { background: rgba(0,212,170,0.2); color: var(--accent2); border-color: transparent; }
+    .tag.categoria { background: rgba(108,99,255,0.15); color: #9990ff; border-color: transparent; }
+    
+    .atividade-card .acoes { display: flex; gap: 6px; flex-shrink: 0; }
+    .atividade-card .data { color: var(--text2); font-size: 0.8rem; margin-top: 6px; }
 
-  /* Atividades */
-  .filtros {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-  .filtros select, .filtros input { width: auto; min-width: 140px; }
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text2); }
+    .empty-state h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
 
-  .atividade-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--accent);
-    border-radius: 8px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    transition: all 0.2s;
-  }
-  .atividade-card:hover { border-color: var(--accent); }
-  .atividade-card.concluida {
-    opacity: 0.55;
-    border-left-color: var(--accent2);
-  }
-  .atividade-card .topo {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  .atividade-card .info h3 { font-size: 1rem; margin-bottom: 4px; }
-  .atividade-card .info p { color: var(--text2); font-size: 0.85rem; }
-  .atividade-card .tags {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-  }
-  .tag {
-    font-size: 0.75rem;
-    padding: 2px 10px;
-    border-radius: 20px;
-    background: var(--surface);
-    color: var(--text2);
-    border: 1px solid var(--border);
-  }
-  /* IDs Ajustados de forma limpa para mapear as classes CSS sem erros de encoding */
-  .tag.responsavel-schalom { border-color: var(--accent); color: var(--accent); }
-  .tag.responsavel-yoni { border-color: var(--accent3); color: #ff8a8a; }
-  .tag.responsavel-ambos { border-color: var(--accent2); color: var(--accent2); }
-  .tag.prioridade-alta { background: rgba(255,107,107,0.2); color: #ff8a8a; border-color: transparent; }
-  .tag.prioridade-media { background: rgba(255,193,7,0.2); color: #ffd54f; border-color: transparent; }
-  .tag.prioridade-baixa { background: rgba(0,212,170,0.2); color: var(--accent2); border-color: transparent; }
-  .tag.categoria { background: rgba(108,99,255,0.15); color: #9990ff; border-color: transparent; }
-  .atividade-card .acoes { display: flex; gap: 6px; flex-shrink: 0; }
-  .atividade-card .data { color: var(--text2); font-size: 0.8rem; margin-top: 6px; }
+    /* ========== MODAL SUGESTOES ========== */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      max-width: 700px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 24px;
+    }
+    .sugestoes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+    .sugestao-item {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px 14px; cursor: pointer; transition: all 0.2s;
+    }
+    .sugestao-item:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .sugestao-item h4 { font-size: 0.9rem; margin-bottom: 4px; }
+    .sugestao-item p { font-size: 0.8rem; color: var(--text2); }
 
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text2);
-  }
-  .empty-state h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
+    /* ========== RECURSOS ========== */
+    .recurso-card {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; transition: all 0.2s; height: 100%;
+    }
+    .recurso-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .recurso-card h4 { font-size: 0.95rem; margin-bottom: 6px; }
+    .recurso-card p { font-size: 0.82rem; color: var(--text2); line-height: 1.5; }
+    .recurso-card .link { display: inline-block; margin-top: 8px; color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 600; }
+    .recurso-card .link:hover { text-decoration: underline; }
+    .recurso-card .tag-recurso {
+      display: inline-block; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px;
+      background: rgba(108,99,255,0.15); color: var(--accent); margin-bottom: 8px;
+    }
+    .categoria-recursos { margin-bottom: 28px; }
+    .categoria-recursos h3 { font-size: 1.05rem; margin-bottom: 12px; color: var(--accent2); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
 
-  .sugestoes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 10px;
-  }
-  .sugestao-item {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .sugestao-item:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .sugestao-item h4 { font-size: 0.9rem; margin-bottom: 4px; }
-  .sugestao-item p { font-size: 0.8rem; color: var(--text2); }
+    /* ========== ROTINA E MILESTONES ========== */
+    .pergunta-rotina { margin-bottom: 16px; }
+    .pergunta-rotina label { font-size: 0.95rem; color: var(--text); margin-bottom: 6px; }
+    .resultado-rotina {
+      display: none; background: var(--surface2); border: 1px solid var(--accent);
+      border-radius: 10px; padding: 20px; margin-top: 16px; white-space: pre-wrap; line-height: 1.6;
+    }
+    .milestone { display: flex; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .milestone:last-child { border-bottom: none; }
+    .milestone .mes { min-width: 80px; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
+    .milestone .desc { color: var(--text2); font-size: 0.9rem; line-height: 1.5; }
 
-  .progress-bar {
-    height: 8px;
-    background: var(--surface2);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 8px 0 4px;
-  }
-  .progress-bar .fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 4px;
-    transition: width 0.3s;
-  }
-  .progress-text { font-size: 0.85rem; color: var(--text2); }
-
-  /* Recursos */
-  .recurso-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-    transition: all 0.2s;
-    height: 100%;
-  }
-  .recurso-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .recurso-card h4 { font-size: 0.95rem; margin-bottom: 6px; }
-  .recurso-card p { font-size: 0.82rem; color: var(--text2); line-height: 1.5; }
-  .recurso-card .link {
-    display: inline-block;
-    margin-top: 8px;
-    color: var(--accent);
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-  .recurso-card .link:hover { text-decoration: underline; }
-  .recurso-card .tag-recurso {
-    display: inline-block;
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background: rgba(108,99,255,0.15);
-    color: var(--accent);
-    margin-bottom: 8px;
-  }
-  .categoria-recursos { margin-bottom: 28px; }
-  .categoria-recursos h3 {
-    font-size: 1.05rem;
-    margin-bottom: 12px;
-    color: var(--accent2);
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 8px;
-  }
-
-  /* Formular Rotina */
-  .pergunta-rotina { margin-bottom: 16px; }
-  .pergunta-rotina label { font-size: 0.95rem; color: var(--text); margin-bottom: 6px; }
-  .resultado-rotina {
-    background: var(--surface2);
-    border: 1px solid var(--accent);
-    border-radius: 10px;
-    padding: 20px;
-    margin-top: 16px;
-    white-space: pre-wrap;
-    line-height: 1.6;
-  }
-  .milestone {
-    display: flex;
-    gap: 16px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .milestone:last-child { border-bottom: none; }
-  .milestone .mes {
-    min-width: 80px;
-    font-weight: 700;
-    color: var(--accent);
-    font-size: 0.9rem;
-  }
-  .milestone .desc { color: var(--text2); font-size: 0.9rem; line-height: 1.5; }
-
-  .checkbox-list label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 0;
-    cursor: pointer;
-    color: var(--text);
-    font-size: 0.9rem;
-  }
-  .checkbox-list input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--accent);
-    flex-shrink: 0;
-  }
-  .checkbox-list label.checked { color: var(--accent2); text-decoration: line-through; opacity: 0.7; }
-
-  @media (max-width: 768px) {
-    .grid-2 { grid-template-columns: 1fr; }
-    .grid-3 { grid-template-columns: 1fr; }
-    .tabs { flex-direction: column; }
-    body { padding: 12px; }
-    .filtros select, .filtros input { width: 100%; }
-    .atividade-card .topo { flex-direction: column; }
-    .atividade-card .acoes { width: 100%; justify-content: flex-end; }
-  }
-</style>
+    /* ========== RESPONSIVO ========== */
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .tabs { flex-direction: column; }
+      body { padding: 12px; }
+      .atividade-card .topo { flex-direction: column; }
+      .atividade-card .acoes { width: 100%; justify-content: flex-end; }
+    }
+  </style>
 </head>
 <body>
 <div class="app">
@@ -330,15 +256,15 @@
   </header>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('rotina')"> Rotina</button>
-    <button class="tab-btn" onclick="switchTab('recursos')"> Recursos</button>
-    <button class="tab-btn" onclick="switchTab('formular')"> Formular Rotina</button>
+    <button class="tab-btn active" onclick="switchTab('rotina')">Rotina</button>
+    <button class="tab-btn" onclick="switchTab('recursos')">Recursos</button>
+    <button class="tab-btn" onclick="switchTab('formular')">Formular Rotina</button>
   </div>
 
   <div id="tab-rotina" class="tab-content active">
     <div class="grid-2">
       <div class="card">
-        <h2> Nova Atividade</h2>
+        <h2>Nova Atividade</h2>
         <form id="form-atividade" onsubmit="addAtividade(event)">
           <div class="form-group">
             <label>Título</label>
@@ -348,7 +274,7 @@
             <label>Descrição</label>
             <textarea id="input-descricao" placeholder="Detalhes da atividade..."></textarea>
           </div>
-          <div class="grid-2" style="grid-template-columns: 1fr 1fr;">
+          <div class="grid-2">
             <div class="form-group">
               <label>Responsável</label>
               <select id="input-responsavel">
@@ -366,7 +292,7 @@
               </select>
             </div>
           </div>
-          <div class="grid-2" style="grid-template-columns: 1fr 1fr;">
+          <div class="grid-2">
             <div class="form-group">
               <label>Categoria</label>
               <select id="input-categoria">
@@ -384,15 +310,15 @@
               <input type="date" id="input-data">
             </div>
           </div>
-          <div class="flex gap-8" style="margin-top: 4px;">
-            <button type="submit" class="btn btn-primary"> Adicionar</button>
-            <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); abrirSugestoes()"> Sugerir atividades</button>
+          <div class="flex gap-8 mt-4">
+            <button type="submit" class="btn btn-primary">Adicionar</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="abrirSugestoes()">Sugerir atividades</button>
           </div>
         </form>
       </div>
 
       <div class="card">
-        <h2> Progresso</h2>
+        <h2>Progresso</h2>
         <div class="flex-between">
           <span class="progress-text" id="progress-text">0 de 0 concluídas</span>
           <span class="progress-text" id="progress-pct">0%</span>
@@ -400,25 +326,34 @@
         <div class="progress-bar">
           <div class="fill" id="progress-fill" style="width:0%"></div>
         </div>
-        <div class="grid-3" style="margin-top:16px; text-align:center;">
-          <div><div style="font-size:1.4rem;font-weight:700;color:var(--accent)" id="stat-total">0</div><div style="font-size:0.8rem;color:var(--text2)">Total</div></div>
-          <div><div style="font-size:1.4rem;font-weight:700;color:var(--accent2)" id="stat-concluidas">0</div><div style="font-size:0.8rem;color:var(--text2)">Feitas</div></div>
-          <div><div style="font-size:1.4rem;font-weight:700;color:var(--accent3)" id="stat-pendentes">0</div><div style="font-size:0.8rem;color:var(--text2)">Pendentes</div></div>
+        <div class="grid-3 mt-16">
+          <div class="stat-box">
+            <div class="stat-number" style="color:var(--accent)" id="stat-total">0</div>
+            <div class="stat-label">Total</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" style="color:var(--accent2)" id="stat-concluidas">0</div>
+            <div class="stat-label">Feitas</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" style="color:var(--accent3)" id="stat-pendentes">0</div>
+            <div class="stat-label">Pendentes</div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <div class="flex-between wrap gap-8">
-        <h2> Lista de Atividades</h2>
+      <div class="flex-between wrap gap-8 mb-12">
+        <h2>Lista de Atividades</h2>
         <div class="flex gap-8 wrap">
-          <select id="filtro-responsavel" onchange="renderAtividades()">
+          <select id="filtro-responsavel" onchange="atualizarFiltros()">
             <option value="todos">Todos responsáveis</option>
             <option value="schalom">Schalom</option>
             <option value="yoni">Yoni</option>
             <option value="ambos">Ambos</option>
           </select>
-          <select id="filtro-categoria" onchange="renderAtividades()">
+          <select id="filtro-categoria" onchange="atualizarFiltros()">
             <option value="todos">Todas categorias</option>
             <option value="aprendizado">Aprendizado</option>
             <option value="codigo">Código</option>
@@ -428,40 +363,41 @@
             <option value="testes">Testes</option>
             <option value="organizacao">Organização</option>
           </select>
-          <select id="filtro-status" onchange="renderAtividades()">
+          <select id="filtro-status" onchange="atualizarFiltros()">
             <option value="todos">Todos status</option>
             <option value="pendente">Pendentes</option>
             <option value="concluida">Concluídas</option>
           </select>
-          <button class="btn btn-danger btn-sm" onclick="limparTudo()"> Limpar tudo</button>
-          <button class="btn btn-outline btn-sm" onclick="exportAtividades()"> Exportar</button>
-          <button class="btn btn-outline btn-sm" onclick="importFromClipboard()"> Colar</button>
-          <button class="btn btn-outline btn-sm" onclick="triggerImportFile()"> Importar</button>
+          <button class="btn btn-danger btn-sm" onclick="limparTudo()">Limpar tudo</button>
+          <button class="btn btn-outline btn-sm" onclick="exportAtividades()">Exportar</button>
+          <button class="btn btn-outline btn-sm" onclick="importFromClipboard()">Colar</button>
+          <button class="btn btn-outline btn-sm" onclick="triggerImportFile()">Importar</button>
           <input type="file" id="file-import" accept="application/json" style="display:none" onchange="handleImportFile(event)">
         </div>
       </div>
       <div id="lista-atividades"></div>
     </div>
 
-    <div id="modal-sugestoes" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; padding:20px;">
-      <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; max-width:700px; width:100%; max-height:80vh; overflow-y:auto; padding:24px;">
+    <div id="modal-sugestoes" class="modal-overlay">
+      <div class="modal-content">
         <div class="flex-between mb-12">
-          <h2 style="color:var(--accent2);"> Sugestões de Atividades</h2>
+          <h2 style="color:var(--accent2);">Sugestões de Atividades</h2>
           <button class="btn btn-sm btn-outline" onclick="fecharSugestoes()">✕ Fechar</button>
         </div>
-        <p style="color:var(--text2); margin-bottom:16px; font-size:0.9rem;">Clique em uma sugestão para adicionar à sua lista:</p>
-        <div class="sugestoes-grid" id="grid-sugestoes"></div>
+        <p style="color:var(--text2); margin-bottom:16px; font-size:0.9rem;">Clique em uma sugestão para adicionar ao formulário:</p>
+        <div class="sugestoes-grid" id="grid-sugestoes">
+          </div>
       </div>
     </div>
   </div>
 
   <div id="tab-recursos" class="tab-content">
     <div class="card">
-      <h2> Ferramentas & Recursos</h2>
+      <h2>Ferramentas & Recursos</h2>
       <p style="color:var(--text2); margin-bottom:16px;">Curadoria de ferramentas, cursos e sites para criar seu jogo 3D com Unity.</p>
 
       <div class="categoria-recursos">
-        <h3> Unity & Programação</h3>
+        <h3>Unity & Programação</h3>
         <div class="grid-3">
           <div class="recurso-card">
             <span class="tag-recurso">Curso Oficial</span>
@@ -476,24 +412,6 @@
             <a class="link" href="https://youtube.com/@Brackeys" target="_blank">YouTube/Brackeys →</a>
           </div>
           <div class="recurso-card">
-            <span class="tag-recurso">YouTube</span>
-            <h4>Code Monkey</h4>
-            <p>Tutoriais avançados de Unity em C#. Sistemas de inventário, combate, UI e muito mais.</p>
-            <a class="link" href="https://youtube.com/@CodeMonkeyUnity" target="_blank">YouTube/CodeMonkey →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">YouTube</span>
-            <h4>Sebastian Lague</h4>
-            <p>Conceitos avançados de programação e gráficos. Ótimo para seu amigo que já tem base.</p>
-            <a class="link" href="https://youtube.com/@SebastianLague" target="_blank">YouTube/SebastianLague →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">IDE</span>
-            <h4>Visual Studio + Rider</h4>
-            <p>VS Community (grátis) para C#. Rider da JetBrains (pago) é o preferido dos profissionais Unity.</p>
-            <a class="link" href="https://visualstudio.microsoft.com" target="_blank">Visual Studio →</a>
-          </div>
-          <div class="recurso-card">
             <span class="tag-recurso">Documentação</span>
             <h4>Scripting API Unity</h4>
             <p>Documentação oficial completa de todas as classes e métodos do Unity.</p>
@@ -503,7 +421,7 @@
       </div>
 
       <div class="categoria-recursos">
-        <h3> Modelagem 3D & Arte</h3>
+        <h3>Modelagem 3D & Arte</h3>
         <div class="grid-3">
           <div class="recurso-card">
             <span class="tag-recurso">Ferramenta</span>
@@ -512,34 +430,16 @@
             <a class="link" href="https://www.blender.org" target="_blank">blender.org →</a>
           </div>
           <div class="recurso-card">
-            <span class="tag-recurso">Curso Grátis</span>
-            <h4>Blender Guru</h4>
-            <p>Série "Donut" para aprender Blender do zero. Melhor ponto de partida para modelagem 3D.</p>
-            <a class="link" href="https://youtube.com/@BlenderGuru" target="_blank">YouTube/BlenderGuru →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Assets Grátis</span>
-            <h4>Unity Asset Store</h4>
-            <p>Milhares de assets gratuitos e pagos. A Unity libera assets gratuitos todo mês.</p>
-            <a class="link" href="https://assetstore.unity.com" target="_blank">assetstore.unity.com →</a>
-          </div>
-          <div class="recurso-card">
             <span class="tag-recurso">Animações</span>
             <h4>Mixamo (Adobe)</h4>
             <p>Animações de personagens prontas. Escolha animações, customize e exporte direto pra Unity.</p>
             <a class="link" href="https://www.mixamo.com" target="_blank">mixamo.com →</a>
           </div>
           <div class="recurso-card">
-            <span class="tag-recurso">Texturas</span>
-            <h4>ambientCG</h4>
-            <p>Texturas PBR gratuitas de alta qualidade para usar nos cenários do seu jogo.</p>
-            <a class="link" href="https://ambientcg.com" target="_blank">ambientcg.com →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Pixel/Arte 2D</span>
-            <h4>Krita + Aseprite</h4>
-            <p>Krita (grátis) para pintura digital. Aseprite para pixel art (UI, ícones, sprites).</p>
-            <a class="link" href="https://krita.org" target="_blank">krita.org →</a>
+            <span class="tag-recurso">Assets Grátis</span>
+            <h4>Unity Asset Store</h4>
+            <p>Milhares de assets gratuitos e pagos. A Unity libera assets gratuitos todo mês.</p>
+            <a class="link" href="https://assetstore.unity.com" target="_blank">assetstore.unity.com →</a>
           </div>
         </div>
       </div>
@@ -549,7 +449,7 @@
   <div id="tab-formular" class="tab-content">
     <div class="grid-2">
       <div class="card">
-        <h2> Gerar Rotina Semanal</h2>
+        <h2>Gerar Rotina Semanal</h2>
         <p style="color:var(--text2); font-size:0.9rem; margin-bottom:12px;">Responda abaixo para gerar uma sugestão de rotina personalizada.</p>
         <div class="pergunta-rotina">
           <label>Quantas horas por semana vocês podem dedicar ao jogo?</label>
@@ -580,198 +480,92 @@
             <option value="design">Game design — regras, sistemas, progressão</option>
           </select>
         </div>
-        <button class="btn btn-primary" onclick="gerarRotina()"> Gerar Rotina</button>
-        <div id="resultado-rotina" class="resultado-rotina" style="display:none;"></div>
+        <button class="btn btn-primary" onclick="gerarRotina()">Gerar Rotina</button>
+        <div id="resultado-rotina" class="resultado-rotina"></div>
       </div>
 
       <div class="card">
-        <h2> Milestones Sugeridas</h2>
+        <h2>Milestones Sugeridas</h2>
         <p style="color:var(--text2); font-size:0.85rem; margin-bottom:8px;">Marco sugerido para um jogo 3D mundo aberto com Unity:</p>
         <div class="milestone">
           <div class="mes">Mês 1-2</div>
-          <div class="desc"><strong>Fundação</strong> — Curso introdutório de Unity, mover câmera 3D, protótipo de movimento do personagem. Você define o conceito do mundo e esboça a lore.</div>
+          <div class="desc"><strong>Fundação</strong> — Curso introdutório de Unity, mover câmera 3D, protótipo de movimento do personagem. Esboço de lore e GDD.</div>
         </div>
         <div class="milestone">
           <div class="mes">Mês 3-4</div>
-          <div class="desc"><strong>Mecânicas base</strong> — Interação com objetos, inventário básico, NPCs. Você cria o documento de design das quests e personagens principais.</div>
+          <div class="desc"><strong>Mecânicas base</strong> — Interação com objetos, inventário básico, NPCs. Design das quests principais.</div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Use UMD bundle so a global `supabase` is available when loaded via <script> -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
 <script>
-  // ========== CONFIGURAÇÃO DO SUPABASE ==========
+  // ========== 1. CONFIGURAÇÃO ==========
   const SUPABASE_URL = 'https://uhljjblxpeaseiqovwwu.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobGpqYmx4cGVhc2VpcW92d3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNDMzODYsImV4cCI6MjA5NzYxOTM4Nn0.p0vo0IYg9VcWFCjkrJk3CnXZlxA_OG1kzYWhgyVxkHE';
-
-  // Try to initialize Supabase; if it fails, fall back to localStorage mode
+  const STORAGE_KEY = 'gameDevAtividades';
+  
   let supabaseClient = null;
   let USE_LOCAL = false;
+  
   try {
-    if (!window.supabase || !window.supabase.createClient) throw new Error('Supabase UMD não encontrado');
+    if (!window.supabase) throw new Error('Supabase indisponível');
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   } catch (err) {
-    console.error('Falha ao inicializar Supabase — ativando modo local:', err);
-    // Only show a single alert if running in browser (avoid test environments)
-    try { alert('Aviso: não foi possível conectar ao serviço remoto. O app funcionará localmente (sem sincronização). Veja o console para mais detalhes.'); } catch (e) {}
+    console.warn('Rodando em modo LocalStorage (sem backend).');
     USE_LOCAL = true;
   }
 
-  // Local storage fallback key
-  const STORAGE_KEY = 'gameDevAtividades';
-
-  function localLoad() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { console.error('Erro ao ler localStorage', e); return []; }
-  }
-
-  function localSave(arr) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); return true; } catch (e) { console.error('Erro ao salvar localStorage', e); return false; }
-  }
-
-// ========== VARIÁVEIS GLOBAIS ==========
+  // ========== 2. ESTADO GLOBAL ==========
   let atividades = [];
-  let filtros = {
-    responsavel: 'todos',
-    categoria: 'todos',
-    status: 'todos'
-  };
+  let filtros = { responsavel: 'todos', categoria: 'todos', status: 'todos' };
 
-  // 👇 O SEU EVENTO DE CARREGAMENTO FICA EXATAMENTE AQUI 👇
+  // ========== 3. INICIALIZAÇÃO ==========
   window.onload = async function() {
-    // Define a data de hoje no input de data por padrão
     const inputData = document.getElementById('input-data');
-    if (inputData) {
-      inputData.value = new Date().toISOString().split('T')[0];
-    }
-    // Carrega os dados salvos do Supabase ou do LocalStorage
+    if (inputData) inputData.value = new Date().toISOString().split('T')[0];
+    
+    popularSugestoes();
     await carregarDadosDoBanco();
+    escutarMudancasEmTempoReal();
   };
 
-  // ========== FUNÇÕES AUXILIARES ==========
+  // ========== 4. NAVEGAÇÃO UI ==========
   function switchTab(tab) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
     document.getElementById('tab-' + tab).classList.add('active');
-    document.querySelector('.tab-btn[onclick="switchTab(\'' + tab + '\')"]').classList.add('active');
+    document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`).classList.add('active');
   }
 
   function formatarData(data) {
     if (!data) return '';
-    const op = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    return new Date(data).toLocaleDateString('pt-BR', op);
+    return new Date(data).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
   }
 
-  function calcularProgresso() {
-    const total = atividades.length;
-    const concluidas = atividades.filter(a => a.concluida).length;
-    const pct = total > 0 ? Math.round((concluidas / total) * 100) : 0;
-    document.getElementById('progress-text').innerText = `${concluidas} de ${total} concluídas`;
-    document.getElementById('progress-pct').innerText = `${pct}%`;
-    document.getElementById('progress-fill').style.width = `${pct}%`;
-  }
-
-  // ========== RENDERIZAÇÃO ==========
-  function renderAtividades() {
-    const lista = document.getElementById('lista-atividades');
-    lista.innerHTML = '';
-
-    const filteredAtividades = atividades.filter(atv => {
-      const matchResp = (filtros.responsavel === 'todos' || atv.responsavel === filtros.responsavel);
-      const matchCat = (filtros.categoria === 'todos' || atv.categoria === filtros.categoria);
-      const matchStatus = (filtros.status === 'todos' || (filtros.status === 'concluida' && atv.concluida) || (filtros.status === 'pendente' && !atv.concluida));
-      return matchResp && matchCat && matchStatus;
-    });
-
-    if (filteredAtividades.length === 0) {
-      lista.innerHTML = `<div class="empty-state">
-        <h3>Nenhuma atividade encontrada</h3>
-        <p>Experimente ajustar os filtros ou adicionar uma nova atividade.</p>
-      </div>`;
-      return;
-    }
-
-    for (let atv of filteredAtividades) {
-      const card = document.createElement('div');
-      card.className = 'atividade-card';
-      card.innerHTML = `
-        <div class="topo">
-          <div class="info">
-            <h3>${atv.titulo}</h3>
-            <p>${atv.descricao}</p>
-          </div>
-          <div class="acoes">
-            <button class="btn btn-sm btn-primary" onclick="toggleConcluir(${atv.id})">${atv.concluida ? '✔️ Feita' : '❌ Pendente'}</button>
-            <button class="btn btn-sm btn-danger" onclick="excluirAtividade(${atv.id})">🗑️ Excluir</button>
-            <button class="btn btn-sm btn-outline" onclick="editarAtividade(${atv.id})">✏️ Editar</button>
-          </div>
-        </div>
-        <div class="tags">
-          ${atv.responsavel !== 'ambos' ? `<span class="tag responsavel-${atv.responsavel}">${atv.responsavel === 'schalom' ? 'Schalom (Lore)' : 'Yoni (Técnico)'}</span>` : ''}
-          <span class="tag prioridade-${atv.prioridade}">Prioridade: ${atv.prioridade.charAt(0).toUpperCase() + atv.prioridade.slice(1)}</span>
-          <span class="tag categoria">${atv.categoria.charAt(0).toUpperCase() + atv.categoria.slice(1)}</span>
-        </div>
-        <div class="data">${atv.data ? `📅 ${formatarData(atv.data)}` : '📅 Sem data'}</div>
-      `;
-      lista.appendChild(card);
-    }
-
-    calcularProgresso();
-  }
-
-  // ========== CARREGAR DADOS (SUPABASE OU LOCAL) ==========
+  // ========== 5. LÓGICA DE ATIVIDADES (CRUD) ==========
   async function carregarDadosDoBanco() {
     if (USE_LOCAL) {
-      atividades = localLoad();
+      atividades = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
       renderAtividades();
       return;
     }
-
     try {
-      const { data, error } = await supabaseClient
-        .from('tasks')
-        .select('*')
-        .order('id', { ascending: false });
-
-      if (error) { console.error('Erro ao buscar dados do Supabase:', error); alert('Erro ao carregar dados remotos. Ver console.'); return; }
-
-      atividades = (data || []).map(item => ({
-        id: item.id,
-        titulo: item.title,
-        descricao: item.description,
-        responsavel: item.assigned_to,
-        prioridade: item.priority,
-        categoria: item.category,
-        data: item.due_date,
-        concluida: item.is_completed
+      const { data, error } = await supabaseClient.from('tasks').select('*').order('id', { ascending: false });
+      if (error) throw error;
+      atividades = data.map(item => ({
+        id: item.id, titulo: item.title, descricao: item.description,
+        responsavel: item.assigned_to, prioridade: item.priority,
+        categoria: item.category, data: item.due_date, concluida: item.is_completed
       }));
-
       renderAtividades();
     } catch (err) {
-      console.error('Erro inesperado ao carregar dados:', err);
-      alert('Erro inesperado ao carregar dados. Ver console.');
+      console.error(err); USE_LOCAL = true; carregarDadosDoBanco();
     }
   }
 
-  escutarMudancasEmTempoReal();
-
-  function escutarMudancasEmTempoReal() {
-    if (USE_LOCAL || !supabaseClient) return;
-    try {
-      supabaseClient
-        .channel('mudancas-planner')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
-          console.log('Mudança detectada no banco de dados remoto!', payload);
-          carregarDadosDoBanco();
-        })
-        .subscribe();
-    } catch (err) { console.error('Erro ao configurar realtime:', err); }
-  }
-
-  // ========== AÇÕES ==========
   async function addAtividade(e) {
     e.preventDefault();
     const titulo = document.getElementById('input-titulo').value.trim();
@@ -788,157 +582,227 @@
     };
 
     if (USE_LOCAL) {
-      const atv = {
-        id: Date.now(),
-        titulo: payload.title,
-        descricao: payload.description,
-        responsavel: payload.assigned_to,
-        prioridade: payload.priority,
-        categoria: payload.category,
-        data: payload.due_date,
-        concluida: payload.is_completed,
-        criadaEm: new Date().toISOString()
-      };
-      atividades.unshift(atv);
-      localSave(atividades);
-      document.getElementById('form-atividade').reset();
-      document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
-      document.getElementById('input-titulo').focus();
+      atividades.unshift({ ...payload, id: Date.now(), titulo: payload.title, descricao: payload.description, responsavel: payload.assigned_to, prioridade: payload.priority, categoria: payload.category, data: payload.due_date, concluida: payload.is_completed });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
+      limparFormulario();
       renderAtividades();
       return;
     }
 
     try {
-      const { error } = await supabaseClient.from('tasks').insert([payload]);
-      if (error) { alert('Erro ao salvar no banco remoto. Veja console.'); console.error(error); return; }
-      document.getElementById('form-atividade').reset();
-      document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
-      document.getElementById('input-titulo').focus();
+      await supabaseClient.from('tasks').insert([payload]);
+      limparFormulario();
       carregarDadosDoBanco();
-    } catch (err) { console.error('Erro ao adicionar (remoto):', err); alert('Erro ao adicionar atividade remota. Veja console.'); }
+    } catch (err) { console.error(err); }
   }
 
   async function toggleConcluir(id) {
     const atv = atividades.find(a => a.id === id);
     if (!atv) return;
-
+    
     if (USE_LOCAL) {
       atv.concluida = !atv.concluida;
-      localSave(atividades);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
       renderAtividades();
       return;
     }
-
-    try {
-      const { error } = await supabaseClient
-        .from('tasks')
-        .update({ is_completed: !atv.concluida })
-        .eq('id', id);
-      if (error) console.error('Erro ao atualizar status:', error);
-      carregarDadosDoBanco();
-    } catch (err) { console.error('Erro ao atualizar remoto:', err); }
+    await supabaseClient.from('tasks').update({ is_completed: !atv.concluida }).eq('id', id);
+    carregarDadosDoBanco();
   }
 
   async function excluirAtividade(id) {
     if (!confirm('Excluir esta atividade?')) return;
-
     if (USE_LOCAL) {
       atividades = atividades.filter(a => a.id !== id);
-      localSave(atividades);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
       renderAtividades();
       return;
     }
-
-    try {
-      const { error } = await supabaseClient
-        .from('tasks')
-        .delete()
-        .eq('id', id);
-      if (error) console.error('Erro ao deletar:', error);
-      carregarDadosDoBanco();
-    } catch (err) { console.error('Erro ao deletar remoto:', err); }
+    await supabaseClient.from('tasks').delete().eq('id', id);
+    carregarDadosDoBanco();
   }
 
   async function editarAtividade(id) {
     const atv = atividades.find(a => a.id === id);
-    if (!atv) return;
     const novoTitulo = prompt('Editar título:', atv.titulo);
     if (!novoTitulo || novoTitulo.trim() === '') return;
 
     if (USE_LOCAL) {
       atv.titulo = novoTitulo.trim();
-      localSave(atividades);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
       renderAtividades();
       return;
     }
-
-    try {
-      const { error } = await supabaseClient
-        .from('tasks')
-        .update({ title: novoTitulo.trim() })
-        .eq('id', id);
-      if (error) console.error('Erro ao editar:', error);
-      carregarDadosDoBanco();
-    } catch (err) { console.error('Erro ao editar remoto:', err); }
+    await supabaseClient.from('tasks').update({ title: novoTitulo.trim() }).eq('id', id);
+    carregarDadosDoBanco();
   }
 
   async function limparTudo() {
-    if (!confirm('Excluir TODAS as atividades? Esta ação não pode ser desfeita.')) return;
-
+    if (!confirm('Excluir TODAS as atividades?')) return;
     if (USE_LOCAL) {
       atividades = [];
-      localSave(atividades);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
       renderAtividades();
       return;
     }
-
-    try {
-      const { error } = await supabaseClient.from('tasks').delete().gte('id', 0);
-      if (error) console.error('Erro ao limpar tudo:', error);
-      carregarDadosDoBanco();
-    } catch (err) { console.error('Erro ao limpar remoto:', err); }
+    await supabaseClient.from('tasks').delete().gte('id', 0);
+    carregarDadosDoBanco();
   }
 
-  async function processImportedData(text) {
-    let imported;
-    try { imported = JSON.parse(text); } catch (err) { alert('JSON inválido.'); return; }
-    if (!Array.isArray(imported)) { alert('O JSON deve ser um array de atividades.'); return; }
+  // ========== 6. RENDERIZAÇÃO DA LISTA ==========
+  function atualizarFiltros() {
+    filtros.responsavel = document.getElementById('filtro-responsavel').value;
+    filtros.categoria = document.getElementById('filtro-categoria').value;
+    filtros.status = document.getElementById('filtro-status').value;
+    renderAtividades();
+  }
 
-    if (USE_LOCAL) {
-      // mesclar sem duplicar ids
-      const existingIds = new Set(atividades.map(a => a.id));
-      const itemsToAdd = imported.map(it => ({
-        id: it.id || Date.now() + Math.floor(Math.random()*100000),
-        titulo: it.titulo || '',
-        descricao: it.descricao || '',
-        responsavel: it.responsavel || 'ambos',
-        prioridade: it.prioridade || 'media',
-        categoria: it.categoria || 'organizacao',
-        data: it.data || '',
-        concluida: !!it.concluida,
-        criadaEm: it.criadaEm || new Date().toISOString()
-      })).filter(it => it.titulo.trim() !== '');
-      atividades = atividades.concat(itemsToAdd);
-      localSave(atividades);
-      renderAtividades();
-      alert('Importação local concluída.');
-      return;
+  function renderAtividades() {
+    const lista = document.getElementById('lista-atividades');
+    const filtradas = atividades.filter(atv => {
+      const matchR = filtros.responsavel === 'todos' || atv.responsavel === filtros.responsavel;
+      const matchC = filtros.categoria === 'todos' || atv.categoria === filtros.categoria;
+      const matchS = filtros.status === 'todos' || (filtros.status === 'concluida' && atv.concluida) || (filtros.status === 'pendente' && !atv.concluida);
+      return matchR && matchC && matchS;
+    });
+
+    if (filtradas.length === 0) {
+      lista.innerHTML = `<div class="empty-state"><h3>Nenhuma atividade encontrada</h3><p>Ajuste os filtros ou adicione uma nova.</p></div>`;
+    } else {
+      lista.innerHTML = filtradas.map(atv => `
+        <div class="atividade-card ${atv.concluida ? 'concluida' : ''}">
+          <div class="topo">
+            <div class="info">
+              <h3>${atv.titulo}</h3>
+              <p>${atv.descricao}</p>
+            </div>
+            <div class="acoes">
+              <button class="btn btn-sm btn-primary" onclick="toggleConcluir(${atv.id})">${atv.concluida ? '✔️ Feita' : '❌ Pendente'}</button>
+              <button class="btn btn-sm btn-outline" onclick="editarAtividade(${atv.id})">✏️ Editar</button>
+              <button class="btn btn-sm btn-danger" onclick="excluirAtividade(${atv.id})">🗑️</button>
+            </div>
+          </div>
+          <div class="tags">
+            ${atv.responsavel !== 'ambos' ? `<span class="tag responsavel-${atv.responsavel}">${atv.responsavel === 'schalom' ? 'Schalom (Lore)' : 'Yoni (Técnico)'}</span>` : ''}
+            <span class="tag prioridade-${atv.prioridade}">Pri: ${atv.prioridade}</span>
+            <span class="tag categoria">${atv.categoria}</span>
+          </div>
+          <div class="data">${atv.data ? `📅 ${formatarData(atv.data)}` : '📅 Sem data'}</div>
+        </div>
+      `).join('');
     }
 
+    // Atualiza estatísticas
+    const concluidas = atividades.filter(a => a.concluida).length;
+    const pct = atividades.length ? Math.round((concluidas / atividades.length) * 100) : 0;
+    
+    document.getElementById('progress-text').innerText = `${concluidas} de ${atividades.length} concluídas`;
+    document.getElementById('progress-pct').innerText = `${pct}%`;
+    document.getElementById('progress-fill').style.width = `${pct}%`;
+    document.getElementById('stat-total').innerText = atividades.length;
+    document.getElementById('stat-concluidas').innerText = concluidas;
+    document.getElementById('stat-pendentes').innerText = atividades.length - concluidas;
+  }
+
+  // ========== 7. EXPORTAÇÃO E IMPORTAÇÃO ==========
+  function exportAtividades() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(atividades, null, 2));
+    const a = document.createElement('a');
+    a.href = dataStr;
+    a.download = "planner_gamedev.json";
+    a.click();
+  }
+
+  function triggerImportFile() { document.getElementById('file-import').click(); }
+
+  function handleImportFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => processImportedData(e.target.result);
+    reader.readAsText(file);
+  }
+
+  async function importFromClipboard() {
     try {
-      for (let item of imported) {
-        await supabaseClient.from('tasks').insert([{
-          title: item.titulo || '',
-          description: item.descricao || '',
-          assigned_to: item.responsavel || 'ambos',
-          priority: item.prioridade || 'media',
-          category: item.categoria || 'organizacao',
-          due_date: item.data || null,
-          is_completed: !!item.concluida
-        }]);
+      const text = await navigator.clipboard.readText();
+      processImportedData(text);
+    } catch (err) { alert('Erro ao ler área de transferência.'); }
+  }
+
+  function processImportedData(text) {
+    try {
+      const parsed = JSON.parse(text);
+      if (!Array.isArray(parsed)) throw new Error();
+      if (USE_LOCAL) {
+        atividades = [...atividades, ...parsed];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
+        renderAtividades();
+        alert('Importado com sucesso!');
+      } else {
+        alert('Importação direta p/ o Supabase requer loop (não implementado por segurança). Use o modo local.');
       }
-      carregarDadosDoBanco();
-    } catch (err) { console.error('Erro ao importar para remoto:', err); alert('Erro ao importar para o banco remoto. Veja console.'); }
+    } catch (e) { alert('JSON inválido.'); }
+  }
+
+  // ========== 8. GERADOR DE ROTINA ==========
+  function gerarRotina() {
+    const horas = document.getElementById('rotina-horas').value;
+    const focoSelect = document.getElementById('rotina-foco');
+    const areaSelect = document.getElementById('rotina-area-vc');
+    const foco = focoSelect.options[focoSelect.selectedIndex].text;
+    const area = areaSelect.options[areaSelect.selectedIndex].text;
+
+    const res = document.getElementById('resultado-rotina');
+    res.style.display = 'block';
+    res.innerHTML = `<strong>🎯 Meta da Semana (${horas}h focadas em: ${foco})</strong>\n\n` +
+      `<strong>Schalom (Lore/História):</strong>\nSeu foco é <em>${area}</em>. Invista cerca de ${Math.floor(horas/2)} horas documentando e preparando o material para o jogo. Lembre-se de não criar nada complexo demais que o código ainda não suporte.\n\n` +
+      `<strong>Yoni (Técnico/Código):</strong>\nO foco é implementar os sistemas bases do Unity que conversem com a fase atual de ${foco}.\n\n` +
+      `<em>Dica: Usem as horas restantes para alinhar e testar juntos o que foi feito!</em>`;
+  }
+
+  // ========== 9. SUGESTÕES (MODAL) ==========
+  const ideiasSugestoes = [
+    { t: 'Criar Repositório (Git)', d: 'Configurar o Github para não perderem os arquivos do Unity.', r: 'yoni', c: 'organizacao', p: 'alta' },
+    { t: 'Prototipar Movimento', d: 'Fazer o personagem andar e pular.', r: 'yoni', c: 'codigo', p: 'alta' },
+    { t: 'Definir Regras do Mundo', d: 'Escrever o básico da lore: cenário, época e regras.', r: 'schalom', c: 'lore', p: 'media' },
+    { t: 'Esboçar NPC Principal', d: 'Criar o primeiro personagem de diálogo.', r: 'schalom', c: 'design', p: 'baixa' }
+  ];
+
+  function popularSugestoes() {
+    const grid = document.getElementById('grid-sugestoes');
+    grid.innerHTML = ideiasSugestoes.map(s => `
+      <div class="sugestao-item" onclick="aplicarSugestao('${s.t}', '${s.d}', '${s.r}', '${s.c}', '${s.p}')">
+        <h4>${s.t}</h4>
+        <p>${s.d}</p>
+      </div>
+    `).join('');
+  }
+
+  function abrirSugestoes() { document.getElementById('modal-sugestoes').classList.add('active'); }
+  function fecharSugestoes() { document.getElementById('modal-sugestoes').classList.remove('active'); }
+
+  function aplicarSugestao(titulo, desc, resp, cat, pri) {
+    document.getElementById('input-titulo').value = titulo;
+    document.getElementById('input-descricao').value = desc;
+    document.getElementById('input-responsavel').value = resp;
+    document.getElementById('input-categoria').value = cat;
+    document.getElementById('input-prioridade').value = pri;
+    fecharSugestoes();
+  }
+
+  // ========== UTILS ==========
+  function limparFormulario() {
+    document.getElementById('form-atividade').reset();
+    document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
+    document.getElementById('input-titulo').focus();
+  }
+
+  function escutarMudancasEmTempoReal() {
+    if (USE_LOCAL || !supabaseClient) return;
+    supabaseClient.channel('mudancas-planner')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => carregarDadosDoBanco())
+      .subscribe();
   }
 </script>
 </body>
