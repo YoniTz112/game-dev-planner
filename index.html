@@ -725,14 +725,12 @@
 
 <script>
   // ========== CONFIGURAÇÃO DO SUPABASE ==========
-  // Substitua com as credenciais do seu painel do Supabase:
   const SUPABASE_URL = 'https://uhljjblxpeaseiqovwwu.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_hG3tXE2HGHL90ZPPmfD-5w_n-ta98xV';
 
-  // Inicializa o cliente do Supabase
   const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // ========== DADOS INICIAIS DA SUGUETÃO ==========
+  // ========== DADOS INICIAIS DA SUGESTÃO ==========
   const SUGESTOES = [
     { titulo: "Curso Unity Learn — Essentials", desc: "Complete o curso introdutório oficial da Unity.", resp: "amigo", cat: "aprendizado", prio: "alta" },
     { titulo: "Esboçar lore principal do mundo", desc: "Escreva a história central, conflitos e ambientação.", resp: "você", cat: "lore", prio: "alta" },
@@ -768,7 +766,6 @@
       return;
     }
 
-    // Mapeia os campos do seu banco para baterem com as variáveis antigas da UI
     atividades = data.map(item => ({
       id: item.id,
       titulo: item.title,
@@ -783,13 +780,12 @@
     renderAtividades();
   }
 
-  // ========== CONFIGURAR REALTIME (TEMPO REAL) ==========
+  // ========== CONFIGURAR REALTIME ==========
   function escutarMudancasEmTempoReal() {
     supabase
       .channel('mudancas-planner')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
         console.log('Mudança detectada no banco de dados remoto!', payload);
-        // Toda vez que você ou seu amigo mudarem algo, recarrega a lista automaticamente na hora
         carregarDadosDoBanco();
       })
       .subscribe();
@@ -810,7 +806,6 @@
     const titulo = document.getElementById('input-titulo').value.trim();
     if (!titulo) return;
 
-    // Envia a nova atividade direto para o Supabase
     const { error } = await supabase.from('tasks').insert([{
       title: titulo,
       description: document.getElementById('input-descricao').value.trim(),
@@ -828,8 +823,8 @@
     }
 
     document.getElementById('form-atividade').reset();
+    document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
     document.getElementById('input-titulo').focus();
-    // O carregarDadosDoBanco vai rodar sozinho via Realtime, mas chamamos por garantia local
     carregarDadosDoBanco();
   }
 
@@ -876,7 +871,6 @@
   async function limparTudo() {
     if (!confirm('Excluir TODAS as atividades do banco? Esta ação não pode ser desfeita.')) return;
     
-    // Deleta tudo fazendo um filtro genérico onde id não seja nulo
     const { error } = await supabase.from('tasks').delete().neq('id', 0);
     
     if (error) console.error('Erro ao limpar tudo:', error);
@@ -914,7 +908,7 @@
                 <span class="tag responsavel-${a.responsavel}">${respLabels[a.responsavel] || a.responsavel}</span>
                 <span class="tag prioridade-${a.prioridade}">${prioLabels[a.prioridade] || a.prioridade}</span>
                 <span class="tag categoria">${catLabels[a.categoria] || a.categoria}</span>
-                ${a.data ? `<span class="tag">${new Date(a.data).toLocaleDateString('pt-BR')}</span>` : ''}
+                ${a.data ? `<span class="tag">${new Date(a.data + 'T00:00:00').toLocaleDateString('pt-BR')}</span>` : ''}
               </div>
             </div>
             <div class="acoes">
@@ -927,7 +921,6 @@
       `).join('');
     }
 
-    // Stats
     const total = atividades.length;
     const concluidas = atividades.filter(a => a.concluida).length;
     const pendentes = total - concluidas;
@@ -947,7 +940,7 @@
     modal.style.display = 'flex';
     const grid = document.getElementById('grid-sugestoes');
     grid.innerHTML = SUGESTOES.map((s, i) => `
-      <div class="sugestao-item" onclick="adicionarSugestao(${i})">
+      <div class="sugestao-item" onclick="adicionarSugestao(event, ${i})">
         <h4>${s.titulo}</h4>
         <p>${s.desc}</p>
         <div class="tags" style="margin-top:6px;">
@@ -963,7 +956,8 @@
     document.getElementById('modal-sugestoes').style.display = 'none';
   }
 
-  async function adicionarSugestao(idx) {
+  async function adicionarSugestao(e, idx) {
+    if (e) e.stopPropagation();
     const s = SUGESTOES[idx];
     
     const { error } = await supabase.from('tasks').insert([{
@@ -982,12 +976,16 @@
     }
   }
 
+  // Modificado para prevenir fechamento precoce por propagação do botão
   document.addEventListener('click', function(e) {
     const modal = document.getElementById('modal-sugestoes');
-    if (e.target === modal) fecharSugestoes();
+    const botaoSugerir = document.querySelector('button[onclick*="abrirSugestoes"]');
+    if (e.target === modal && e.target !== botaoSugerir) {
+      fecharSugestoes();
+    }
   });
 
-  // ========== EXPORT / IMPORT (Mantidos como fallback de cópia local) ==========
+  // ========== EXPORT / IMPORT ==========
   function exportAtividades() {
     const dataStr = JSON.stringify(atividades, null, 2);
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1041,7 +1039,7 @@
     carregarDadosDoBanco();
   }
 
-  // ========== FORMULAR ROTINA (Lógica local) ==========
+  // ========== FORMULAR ROTINA ==========
   function gerarRotina() {
     const horas = parseInt(document.getElementById('rotina-horas').value);
     const foco = document.getElementById('rotina-foco').value;
@@ -1077,7 +1075,6 @@
   // ========== INICIALIZAR APP ==========
   document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
 
-  // Início de tudo
   carregarDadosDoBanco();
   escutarMudancasEmTempoReal();
 </script>
