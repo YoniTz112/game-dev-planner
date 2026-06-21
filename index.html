@@ -721,15 +721,25 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-  // ========== DADOS ==========
+  // ========== CONFIGURAÇÃO DO SUPABASE ==========
+  // Substitua com as credenciais do seu painel do Supabase:
+  const SUPABASE_URL = 'https://uhljjblxpeaseiqovwwu.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_hG3tXE2HGHL90ZPPmfD-5w_n-ta98xV';
+
+  // Inicializa o cliente do Supabase
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ========== DADOS INICIAIS DA SUGUETÃO ==========
   const SUGESTOES = [
     { titulo: "Curso Unity Learn — Essentials", desc: "Complete o curso introdutório oficial da Unity.", resp: "amigo", cat: "aprendizado", prio: "alta" },
     { titulo: "Esboçar lore principal do mundo", desc: "Escreva a história central, conflitos e ambientação.", resp: "você", cat: "lore", prio: "alta" },
     { titulo: "Protótipo de movimento 3D", desc: "Implementar WASD + camera com mouse no Unity.", resp: "amigo", cat: "codigo", prio: "alta" },
     { titulo: "Definir personagens principais", desc: "Criar perfis, backstory e motivações dos NPCs.", resp: "você", cat: "lore", prio: "media" },
     { titulo: "Sistema básico de quests", desc: "Criar estrutura de missões no código.", resp: "amigo", cat: "codigo", prio: "alta" },
-    { titulo: "Escrever 3 quests iniciais", desc: "Missões introdutórias com descrição, objetivos e diálogos.", resp: "você", cat: "lore", prio: "media" },
+    { titulo: "Escrever 3 quests iniciais", desc: "Missões introdutórias com descrição, objectives e diálogos.", resp: "você", cat: "lore", prio: "media" },
     { titulo: "Modelar personagem principal no Blender", desc: "Primeiro modelo 3D do protagonista.", resp: "ambos", cat: "design", prio: "media" },
     { titulo: "Sistema de inventário", desc: "Implementar coleta, armazenamento e uso de itens.", resp: "amigo", cat: "codigo", prio: "media" },
     { titulo: "Mapear o mundo (documento)", desc: "Desenhar mapa conceitual: biomas, cidades, dungeons.", resp: "você", cat: "design", prio: "media" },
@@ -744,35 +754,45 @@
     { titulo: "Sessão de brainstorming semanal", desc: "Reunião pra alinhar lore e código da semana.", resp: "ambos", cat: "organizacao", prio: "media" },
   ];
 
-  // Fallback storage key for localStorage
-  const STORAGE_KEY = 'gameDevAtividades';
-
   let atividades = [];
 
-  // Local-only persistence (no remote API required)
-  function apiGetAtividades() {
-    try {
-      const local = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      return Promise.resolve(local);
-    } catch (e) {
-      console.warn('Falha ao ler localStorage, retornando array vazio', e);
-      return Promise.resolve([]);
+  // ========== BUSCAR E SINCRONIZAR DO SUPABASE ==========
+  async function carregarDadosDoBanco() {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .order('id', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao buscar dados do Supabase:', error);
+      return;
     }
+
+    // Mapeia os campos do seu banco para baterem com as variáveis antigas da UI
+    atividades = data.map(item => ({
+      id: item.id,
+      titulo: item.title,
+      descricao: item.description,
+      responsavel: item.assigned_to,
+      prioridade: item.priority,
+      categoria: item.category,
+      data: item.due_date,
+      concluida: item.is_completed
+    }));
+
+    renderAtividades();
   }
 
-  function apiSaveAtividades(arr) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-      return Promise.resolve(true);
-    } catch (e) {
-      console.warn('Falha ao salvar em localStorage', e);
-      return Promise.resolve(false);
-    }
-  }
-
-  async function salvar() {
-    const ok = await apiSaveAtividades(atividades);
-    return ok;
+  // ========== CONFIGURAR REALTIME (TEMPO REAL) ==========
+  function escutarMudancasEmTempoReal() {
+    supabase
+      .channel('mudancas-planner')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
+        console.log('Mudança detectada no banco de dados remoto!', payload);
+        // Toda vez que você ou seu amigo mudarem algo, recarrega a lista automaticamente na hora
+        carregarDadosDoBanco();
+      })
+      .subscribe();
   }
 
   // ========== SWITCH TAB ==========
@@ -784,55 +804,83 @@
     if (tab === 'rotina') renderAtividades();
   }
 
-  // ========== CRUD ==========
+  // ========== CRUD CONECTADO AO SUPABASE ==========
   async function addAtividade(e) {
     e.preventDefault();
     const titulo = document.getElementById('input-titulo').value.trim();
     if (!titulo) return;
-    const atividade = {
-      id: Date.now(),
-      titulo,
-      descricao: document.getElementById('input-descricao').value.trim(),
-      responsavel: document.getElementById('input-responsavel').value,
-      prioridade: document.getElementById('input-prioridade').value,
-      categoria: document.getElementById('input-categoria').value,
-      data: document.getElementById('input-data').value,
-      concluida: false,
-      criadaEm: new Date().toISOString()
-    };
-    atividades.unshift(atividade);
-    await salvar();
+
+    // Envia a nova atividade direto para o Supabase
+    const { error } = await supabase.from('tasks').insert([{
+      title: titulo,
+      description: document.getElementById('input-descricao').value.trim(),
+      assigned_to: document.getElementById('input-responsavel').value,
+      priority: document.getElementById('input-prioridade').value,
+      category: document.getElementById('input-categoria').value,
+      due_date: document.getElementById('input-data').value || null,
+      is_completed: false
+    }]);
+
+    if (error) {
+      alert('Erro ao salvar no banco de dados!');
+      console.error(error);
+      return;
+    }
+
     document.getElementById('form-atividade').reset();
     document.getElementById('input-titulo').focus();
-    renderAtividades();
+    // O carregarDadosDoBanco vai rodar sozinho via Realtime, mas chamamos por garantia local
+    carregarDadosDoBanco();
   }
 
-  function toggleConcluir(id) {
+  async function toggleConcluir(id) {
     const atv = atividades.find(a => a.id === id);
-    if (atv) { atv.concluida = !atv.concluida; salvar().then(renderAtividades); }
+    if (!atv) return;
+
+    const { error } = await supabase
+      .from('tasks')
+      .update({ is_completed: !atv.concluida })
+      .eq('id', id);
+
+    if (error) console.error('Erro ao atualizar status:', error);
+    carregarDadosDoBanco();
   }
 
-  function excluirAtividade(id) {
+  async function excluirAtividade(id) {
     if (!confirm('Excluir esta atividade?')) return;
-    atividades = atividades.filter(a => a.id !== id);
-    salvar().then(renderAtividades);
+
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', id);
+
+    if (error) console.error('Erro ao deletar:', error);
+    carregarDadosDoBanco();
   }
 
-  function editarAtividade(id) {
+  async function editarAtividade(id) {
     const atv = atividades.find(a => a.id === id);
     if (!atv) return;
     const novoTitulo = prompt('Editar título:', atv.titulo);
     if (!novoTitulo || novoTitulo.trim() === '') return;
-    atv.titulo = novoTitulo.trim();
-    atv.responsavel = prompt('Responsável (você/amigo/ambos):', atv.responsavel) || atv.responsavel;
-    atv.prioridade = prompt('Prioridade (alta/media/baixa):', atv.prioridade) || atv.prioridade;
-    salvar().then(renderAtividades);
+
+    const { error } = await supabase
+      .from('tasks')
+      .update({ title: novoTitulo.trim() })
+      .eq('id', id);
+
+    if (error) console.error('Erro ao editar:', error);
+    carregarDadosDoBanco();
   }
 
-  function limparTudo() {
-    if (!confirm('Excluir TODAS as atividades? Esta ação não pode ser desfeita.')) return;
-    atividades = [];
-    salvar().then(renderAtividades);
+  async function limparTudo() {
+    if (!confirm('Excluir TODAS as atividades do banco? Esta ação não pode ser desfeita.')) return;
+    
+    // Deleta tudo fazendo um filtro genérico onde id não seja nulo
+    const { error } = await supabase.from('tasks').delete().neq('id', 0);
+    
+    if (error) console.error('Erro ao limpar tudo:', error);
+    carregarDadosDoBanco();
   }
 
   // ========== RENDER ==========
@@ -915,191 +963,106 @@
     document.getElementById('modal-sugestoes').style.display = 'none';
   }
 
-  function adicionarSugestao(idx) {
+  async function adicionarSugestao(idx) {
     const s = SUGESTOES[idx];
-    const atividade = {
-      id: Date.now(),
-      titulo: s.titulo,
-      descricao: s.desc,
-      responsavel: s.resp,
-      prioridade: s.prio,
-      categoria: s.cat,
-      data: '',
-      concluida: false,
-      criadaEm: new Date().toISOString()
-    };
-    atividades.unshift(atividade);
-    salvar().then(() => { renderAtividades(); fecharSugestoes(); });
+    
+    const { error } = await supabase.from('tasks').insert([{
+      title: s.titulo,
+      description: s.desc,
+      assigned_to: s.resp,
+      priority: s.prio,
+      category: s.cat,
+      due_date: null,
+      is_completed: false
+    }]);
+
+    if (!error) {
+      fecharSugestoes();
+      carregarDadosDoBanco();
+    }
   }
 
-  // Fechar modal clicando fora
   document.addEventListener('click', function(e) {
     const modal = document.getElementById('modal-sugestoes');
     if (e.target === modal) fecharSugestoes();
   });
 
-  // ========== EXPORT / IMPORT ==========
+  // ========== EXPORT / IMPORT (Mantidos como fallback de cópia local) ==========
   function exportAtividades() {
     const dataStr = JSON.stringify(atividades, null, 2);
-    // try copy to clipboard (best-effort)
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(dataStr).catch(() => {});
     }
-    // trigger download
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'game-dev-atividades-' + new Date().toISOString().slice(0,10) + '.json';
+    a.download = 'game-dev-atividades.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    alert('Exportação concluída. O JSON foi baixado e também copiado (se permitido).');
+    alert('Exportação concluída.');
   }
 
-  function triggerImportFile() {
-    document.getElementById('file-import').click();
-  }
-
+  function triggerImportFile() { document.getElementById('file-import').click(); }
   function handleImportFile(e) {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
     const reader = new FileReader();
-    reader.onload = function() {
-      processImportedData(reader.result);
-      // reset input
-      e.target.value = '';
-    };
+    reader.onload = function() { processImportedData(reader.result); e.target.value = ''; };
     reader.readAsText(f);
   }
 
   async function importFromClipboard() {
-    if (!navigator.clipboard || !navigator.clipboard.readText) {
-      alert('Leitura da área de transferência não suportada neste navegador. Use o botão Importar e selecione um arquivo JSON.');
-      return;
-    }
+    if (!navigator.clipboard || !navigator.clipboard.readText) return;
     try {
       const text = await navigator.clipboard.readText();
-      if (!text) { alert('Área de transferência vazia.'); return; }
-      processImportedData(text);
-    } catch (err) {
-      alert('Não foi possível acessar a área de transferência: ' + (err && err.message || err));
-    }
+      if (text) processImportedData(text);
+    } catch (err) { console.error(err); }
   }
 
-  function processImportedData(text) {
+  async function processImportedData(text) {
     let imported;
-    try {
-      imported = JSON.parse(text);
-    } catch (err) {
-      alert('JSON inválido. Verifique o arquivo/entrada e tente novamente.');
-      return;
-    }
-    if (!Array.isArray(imported)) {
-      alert('O JSON deve representar um array de atividades.');
-      return;
-    }
-    // basic validation (ensure at least a title exists)
-    const invalid = imported.some(it => !it || typeof it.titulo !== 'string' || it.titulo.trim() === '');
-    if (invalid) {
-      if (!confirm('Algumas atividades importadas parecem inválidas (faltando título). Deseja prosseguir mesmo assim?')) return;
-    }
+    try { imported = JSON.parse(text); } catch (err) { return; }
+    if (!Array.isArray(imported)) return;
 
-    const substituir = confirm('Deseja substituir todas as atividades atuais? (OK = substituir, Cancel = mesclar)');
-    if (substituir) {
-      atividades = imported.map(normalizeImported);
-    } else {
-      const existingIds = new Set(atividades.map(a => a.id));
-      const itemsToAdd = imported.map(it => {
-        // avoid id collisions
-        if (existingIds.has(it.id)) it.id = Date.now() + Math.floor(Math.random() * 100000);
-        return normalizeImported(it);
-      });
-      atividades = atividades.concat(itemsToAdd);
+    for (let item of imported) {
+      await supabase.from('tasks').insert([{
+        title: item.titulo || '',
+        description: item.descricao || '',
+        assigned_to: item.responsavel || 'ambos',
+        priority: item.prioridade || 'media',
+        category: item.categoria || 'organizacao',
+        due_date: item.data || null,
+        is_completed: !!item.concluida
+      }]);
     }
-    salvar().then(() => { renderAtividades(); alert('Importação concluída.'); });
+    carregarDadosDoBanco();
   }
 
-  function normalizeImported(it) {
-    return {
-      id: it.id || Date.now() + Math.floor(Math.random() * 100000),
-      titulo: it.titulo || '',
-      descricao: it.descricao || '',
-      responsavel: it.responsavel || 'ambos',
-      prioridade: it.prioridade || 'media',
-      categoria: it.categoria || 'organizacao',
-      data: it.data || '',
-      concluida: !!it.concluida,
-      criadaEm: it.criadaEm || new Date().toISOString()
-    };
-  }
-
-  // ========== FORMULAR ROTINA ==========
+  // ========== FORMULAR ROTINA (Lógica local) ==========
   function gerarRotina() {
     const horas = parseInt(document.getElementById('rotina-horas').value);
     const foco = document.getElementById('rotina-foco').value;
     const areaVc = document.getElementById('rotina-area-vc').value;
 
-    const focoLabels = {
-      aprendizado: 'aprendizado da ferramenta',
-      prototipo: 'prototipação rápida',
-      mecanicas: 'implementação de mecânicas',
-      conteudo: 'criação de conteúdo',
-      polimento: 'polimento e finalização'
-    };
-
-    const areaLabels = {
-      lore: 'escrever a lore e história principal',
-      quests: 'criar quests e missões',
-      personagens: 'desenvolver personagens e diálogos',
-      mundo: 'desenhar o mapa e documentar o mundo',
-      design: 'game design — regras e sistemas'
-    };
+    const focoLabels = { aprendizado: 'aprendizado da ferramenta', prototipo: 'prototipação rápida', mecanicas: 'implementação de mecânicas', conteudo: 'criação de conteúdo', polimento: 'polimento e finalização' };
+    const areaLabels = { lore: 'escrever a lore e história principal', quests: 'criar quests e missões', personagens: 'desenvolver personagens e diálogos', mundo: 'desenhar o mapa e documentar o mundo', design: 'game design — regras e sistemas' };
 
     const hrsVc = Math.round(horas * 0.35);
     const hrsAmigo = Math.round(horas * 0.45);
     const hrsJuntos = horas - hrsVc - hrsAmigo;
     const dias = Math.max(1, Math.round(horas / 2));
 
-    const rotina = `
-╔══════════════════════════════════════╗
-║     ROTINA SEMANAL — ${horas}h/semana       ║
-╚══════════════════════════════════════╝
-
- FOCO DA SEMANA: ${focoLabels[foco].toUpperCase()}
- ─────────────────────────────────────
-
- VOCÊ (${hrsVc}h — Lore/Design)
-   • ${areaLabels[areaVc]}
-   • Revisar e organizar documentos do GDD
-   • Criar referências visuais (mood board)
-
- AMIGO (${hrsAmigo}h — Código)
-   • Trabalhar em ${focoLabels[foco]}
-   • Revisar e refatorar código existente
-   • Pesquisar soluções técnicas
-
- JUNTOS (${hrsJuntos}h — Alinhamento)
-   • Reunião de planejamento (início da semana)
-   • Revisão de progresso (meio da semana)
-   • Testar o que foi implementado
-
- RITMO SUGERIDO:
-   • ${dias} dias distribuídos na semana
-   • Sessões de ~${Math.round(horas/dias)}h cada
-   • Alternar blocos de foco com pausas de 10min
-
- DICA: Comece pequeno. Um protótipo simples
- rodando vale mais que um plano gigante no papel.
- `;
+    const rotina = `\n╔══════════════════════════════════════╗\n║     ROTINA SEMANAL — ${horas}h/semana       ║\n╚══════════════════════════════════════╝\n\n FOCO DA SEMANA: ${focoLabels[foco].toUpperCase()}\n ─────────────────────────────────────\n\n VOCÊ (${hrsVc}h — Lore/Design)\n   • ${areaLabels[areaVc]}\n   • Revisar e organizar documentos do GDD\n   • Criar referências visuais (mood board)\n\n AMIGO (${hrsAmigo}h — Código)\n   • Trabalhar em ${focoLabels[foco]}\n   • Revisar e refatorar código existente\n   • Pesquisar soluções técnicas\n\n JUNTOS (${hrsJuntos}h — Alinhamento)\n   • Reunião de planejamento (início da semana)\n   • Revisão de progresso (meio da semana)\n   • Testar o que foi implementado\n\n RITMO SUGERIDO:\n   • ${dias} dias distribuídos na semana\n   • Sessões de ~${Math.round(horas/dias)}h cada\n   • Alternar blocos de foco com pausas de 10min\n\n DICA: Comece pequeno. Um protótipo simples\n rodando vale mais que um plano gigante no papel.\n `;
 
     const resultado = document.getElementById('resultado-rotina');
     resultado.textContent = rotina;
     resultado.style.display = 'block';
   }
 
-  // ========== CHECKLIST ==========
+  // ========== CHECKLIST LOCAL ==========
   document.querySelectorAll('#checklist-fundamentos input[type="checkbox"]').forEach(cb => {
     const key = 'checklist_' + cb.parentElement.textContent.trim();
     cb.checked = localStorage.getItem(key) === 'true';
@@ -1111,16 +1074,12 @@
     });
   });
 
-  // ========== INICIALIZAR ==========
-  // Data padrão no input
+  // ========== INICIALIZAR APP ==========
   document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
 
-  (async function init(){
-    atividades = await apiGetAtividades();
-    // ensure it's an array
-    if (!Array.isArray(atividades)) atividades = [];
-    renderAtividades();
-  })();
+  // Início de tudo
+  carregarDadosDoBanco();
+  escutarMudancasEmTempoReal();
 </script>
 </body>
 </html>
