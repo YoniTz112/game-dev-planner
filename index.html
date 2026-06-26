@@ -3,536 +3,408 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game Dev Planner</title>
+  <title>Game Dev Planner | Pro</title>
   <style>
-    /* ========== VARIÁVEIS E BASE ========== */
+    /* ========== ESTÉTICA PREMIUM & DARK MODE ========== */
     :root {
-      --bg: #0f0f1a;
-      --surface: #1a1a2e;
-      --surface2: #252542;
-      --accent: #6c63ff;
-      --accent2: #00d4aa;
-      --accent3: #ff6b6b;
-      --text: #e0e0f0;
-      --text2: #8888aa;
-      --border: #2a2a45;
-      --shadow: 0 4px 20px rgba(0,0,0,0.4);
+      --bg: #000000;
+      --surface: #151516;
+      --surface-glass: rgba(28, 28, 30, 0.65);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.15);
+      
+      --text-primary: #F5F5F7;
+      --text-secondary: #86868B;
+      
+      --accent-yoni: #0A84FF;    /* Azul Tech Premium */
+      --accent-schalom: #FF453A; /* Vermelho vibrante */
+      --accent-ambos: #BF5AF2;   /* Roxo luxo */
+      
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+      --radius-sm: 10px;
+      --radius-lg: 18px;
     }
     
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-primary);
       min-height: 100vh;
-      padding: 20px;
+      padding: 40px 20px;
+      -webkit-font-smoothing: antialiased;
+      /* Fundo minimalista com leve brilho central */
+      background-image: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 60%);
     }
     
     .app { max-width: 1100px; margin: 0 auto; }
 
+    /* ========== GLASSMORPHISM & CONTAINERS ========== */
+    .glass {
+      background: var(--surface-glass);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+
     /* ========== HEADER ========== */
     header {
       text-align: center;
-      padding: 30px 20px 20px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 24px;
+      margin-bottom: 40px;
     }
     header h1 {
-      font-size: 2rem;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      color: var(--text-primary);
     }
-    header p { color: var(--text2); margin-top: 6px; font-size: 0.95rem; }
+    header p { 
+      color: var(--text-secondary); 
+      margin-top: 8px; 
+      font-size: 1.1rem; 
+      font-weight: 400;
+    }
 
     /* ========== TABS ========== */
     .tabs {
-      display: flex;
-      gap: 4px;
+      display: inline-flex;
       background: var(--surface);
-      border-radius: 12px;
       padding: 4px;
-      margin-bottom: 24px;
+      border-radius: 14px;
+      margin-bottom: 32px;
       border: 1px solid var(--border);
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
     }
     .tab-btn {
-      flex: 1;
-      padding: 12px 16px;
+      padding: 10px 24px;
       border: none;
       background: transparent;
-      color: var(--text2);
+      color: var(--text-secondary);
       font-size: 0.95rem;
       cursor: pointer;
-      border-radius: 8px;
-      transition: all 0.2s;
+      border-radius: 10px;
+      transition: all 0.3s ease;
       font-weight: 500;
     }
-    .tab-btn:hover { color: var(--text); background: var(--surface2); }
-    .tab-btn.active { background: var(--accent); color: #fff; }
+    .tab-btn:hover { color: var(--text-primary); }
+    .tab-btn.active { 
+      background: rgba(255,255,255,0.1); 
+      color: var(--text-primary); 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
     
-    .tab-content { display: none; }
+    .tab-content { display: none; animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     .tab-content.active { display: block; }
+    @keyframes fadeUp { 
+      from { opacity: 0; transform: translateY(12px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
 
-    /* ========== LAYOUT & CARDS ========== */
-    .card {
-      background: var(--surface);
+    /* ========== LAYOUT ========== */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .card { padding: 30px; margin-bottom: 24px; }
+    .card h2 { font-size: 1.3rem; margin-bottom: 24px; font-weight: 600; letter-spacing: -0.5px; }
+
+    /* ========== FORMS & INPUTS ========== */
+    label { 
+      display: block; margin-bottom: 8px; 
+      color: var(--text-secondary); font-size: 0.85rem; 
+      font-weight: 500;
+    }
+    input, select, textarea {
+      width: 100%; padding: 14px 16px; 
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.3); color: var(--text-primary);
+      font-size: 0.95rem; transition: all 0.2s ease;
+      outline: none; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { 
+      border-color: rgba(255,255,255,0.3); 
+      background: rgba(255,255,255,0.03);
+    }
+    .form-group { margin-bottom: 20px; }
+
+    /* ========== BOTÕES ========== */
+    .btn {
+      padding: 14px 24px; border: none; border-radius: var(--radius-sm);
+      cursor: pointer; font-size: 0.95rem; font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%;
+    }
+    .btn-primary { 
+      background: var(--text-primary); 
+      color: var(--bg); 
+    }
+    .btn-primary:hover { 
+      background: #ffffff; 
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(255,255,255,0.15);
+    }
+    .btn-outline { 
+      background: transparent; border: 1px solid var(--border); 
+      color: var(--text-primary); width: auto; padding: 10px 16px;
+    }
+    .btn-outline:hover { 
+      background: rgba(255,255,255,0.05); border-color: var(--border-hover);
+    }
+
+    /* ========== ATIVIDADES (LISTA 3D EFFECT) ========== */
+    .atividade-card {
+      background: rgba(255,255,255,0.02);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: var(--shadow);
-    }
-    .card h2 {
-      font-size: 1.2rem;
+      padding: 18px;
       margin-bottom: 12px;
-      color: var(--accent2);
-    }
-
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-    .flex { display: flex; }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; }
-    .gap-8 { gap: 8px; }
-    .wrap { flex-wrap: wrap; }
-    .mt-4 { margin-top: 4px; }
-    .mt-16 { margin-top: 16px; }
-
-    /* ========== FORMS ========== */
-    label { display: block; margin-bottom: 4px; color: var(--text2); font-size: 0.85rem; font-weight: 500; }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--text);
-      font-size: 0.9rem;
-      transition: border 0.2s;
-      font-family: inherit;
-    }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
-    textarea { resize: vertical; min-height: 60px; }
-    .form-group { margin-bottom: 12px; }
-
-    /* ========== BOTOES ========== */
-    .btn {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 600;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
-    .btn-success { background: var(--accent2); color: #0f0f1a; }
-    .btn-success:hover { filter: brightness(1.15); transform: translateY(-1px); }
-    .btn-danger { background: var(--accent3); color: #fff; }
-    .btn-danger:hover { filter: brightness(1.15); }
-    .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
-    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-
-    /* ========== PROGRESSO & ESTATÍSTICAS ========== */
-    .progress-bar {
-      height: 8px;
-      background: var(--surface2);
-      border-radius: 4px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
       overflow: hidden;
-      margin: 8px 0 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-    .progress-bar .fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      border-radius: 4px;
-      transition: width 0.3s;
+    /* Indicador sutil de responsável */
+    .atividade-card::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
     }
-    .progress-text { font-size: 0.85rem; color: var(--text2); }
-    .stat-box { text-align: center; }
-    .stat-number { font-size: 1.4rem; font-weight: 700; }
-    .stat-label { font-size: 0.8rem; color: var(--text2); }
+    .atividade-card.resp-yoni::before { background: var(--accent-yoni); }
+    .atividade-card.resp-schalom::before { background: var(--accent-schalom); }
+    .atividade-card.resp-ambos::before { background: var(--accent-ambos); }
+    
+    /* Efeito de elevação (3D) no hover */
+    .atividade-card:hover { 
+      transform: translateY(-2px) scale(1.01); 
+      background: rgba(255,255,255,0.04); 
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-sm);
+    }
+    .atividade-card.concluida { 
+      opacity: 0.35; 
+      transform: none; 
+      box-shadow: none;
+      filter: grayscale(100%);
+    }
+    .atividade-card.concluida .titulo-tarefa { text-decoration: line-through; }
+    
+    .tag-container { display: flex; gap: 8px; align-items: center; }
+    .tag { 
+      font-size: 0.7rem; padding: 4px 10px; border-radius: 6px; 
+      font-weight: 600; letter-spacing: 0.5px;
+    }
+    .tag.yoni { background: rgba(10, 132, 255, 0.15); color: var(--accent-yoni); }
+    .tag.schalom { background: rgba(255, 69, 58, 0.15); color: var(--accent-schalom); }
+    .tag.ambos { background: rgba(191, 90, 242, 0.15); color: var(--accent-ambos); }
+    .tag.pri { border: 1px solid var(--border); color: var(--text-secondary); }
 
-    /* ========== ATIVIDADES ========== */
-    .atividade-card {
-      background: var(--surface2);
+    .titulo-tarefa { font-weight: 500; font-size: 1rem; color: var(--text-primary); line-height: 1.4; }
+    
+    .acao-btn {
+      align-self: flex-start;
+      background: rgba(255,255,255,0.05);
       border: 1px solid var(--border);
-      border-left: 4px solid var(--accent);
-      border-radius: 8px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
       transition: all 0.2s;
     }
-    .atividade-card:hover { border-color: var(--accent); }
-    .atividade-card.concluida { opacity: 0.55; border-left-color: var(--accent2); }
-    .atividade-card .topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-    .atividade-card .info h3 { font-size: 1rem; margin-bottom: 4px; }
-    .atividade-card .info p { color: var(--text2); font-size: 0.85rem; }
-    
-    .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-    .tag { font-size: 0.75rem; padding: 2px 10px; border-radius: 20px; background: var(--surface); color: var(--text2); border: 1px solid var(--border); }
-    .tag.responsavel-schalom { border-color: var(--accent); color: var(--accent); }
-    .tag.responsavel-yoni { border-color: var(--accent3); color: #ff8a8a; }
-    .tag.responsavel-ambos { border-color: var(--accent2); color: var(--accent2); }
-    .tag.prioridade-alta { background: rgba(255,107,107,0.2); color: #ff8a8a; border-color: transparent; }
-    .tag.prioridade-media { background: rgba(255,193,7,0.2); color: #ffd54f; border-color: transparent; }
-    .tag.prioridade-baixa { background: rgba(0,212,170,0.2); color: var(--accent2); border-color: transparent; }
-    .tag.categoria { background: rgba(108,99,255,0.15); color: #9990ff; border-color: transparent; }
-    
-    .atividade-card .acoes { display: flex; gap: 6px; flex-shrink: 0; }
-    .atividade-card .data { color: var(--text2); font-size: 0.8rem; margin-top: 6px; }
+    .acao-btn:hover { background: rgba(255,255,255,0.1); }
 
-    .empty-state { text-align: center; padding: 40px 20px; color: var(--text2); }
-    .empty-state h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
+    /* ========== LORE TIMELINE ========== */
+    .timeline { position: relative; padding-left: 24px; margin-top: 20px; }
+    .timeline::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
+      background: var(--border);
+    }
+    .timeline-item { position: relative; margin-bottom: 32px; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: -28px; top: 6px; width: 8px; height: 8px;
+      border-radius: 50%; background: var(--bg); border: 2px solid var(--accent-schalom);
+    }
+    .lore-content {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+    }
 
-    /* ========== MODAL SUGESTOES ========== */
-    .modal-overlay {
-      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+    /* ========== ROTINA VISUAL ========== */
+    .rotina-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-top: 24px; }
+    .dia-card {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; text-align: center;
     }
-    .modal-overlay.active { display: flex; }
-    .modal-content {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-      max-width: 700px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 24px;
+    .dia-titulo { font-weight: 600; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-secondary); }
+    .block {
+      padding: 10px 8px; border-radius: 8px; font-size: 0.75rem; margin-bottom: 8px; font-weight: 500;
     }
-    .sugestoes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
-    .sugestao-item {
-      background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
-      padding: 12px 14px; cursor: pointer; transition: all 0.2s;
-    }
-    .sugestao-item:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .sugestao-item h4 { font-size: 0.9rem; margin-bottom: 4px; }
-    .sugestao-item p { font-size: 0.8rem; color: var(--text2); }
+    .block.yoni { background: rgba(10, 132, 255, 0.1); color: var(--accent-yoni); }
+    .block.schalom { background: rgba(255, 69, 58, 0.1); color: var(--accent-schalom); }
+    .block.reuniao { background: rgba(191, 90, 242, 0.1); color: var(--accent-ambos); }
 
-    /* ========== RECURSOS ========== */
-    .recurso-card {
-      background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
-      padding: 16px; transition: all 0.2s; height: 100%;
-    }
-    .recurso-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .recurso-card h4 { font-size: 0.95rem; margin-bottom: 6px; }
-    .recurso-card p { font-size: 0.82rem; color: var(--text2); line-height: 1.5; }
-    .recurso-card .link { display: inline-block; margin-top: 8px; color: var(--accent); text-decoration: none; font-size: 0.85rem; font-weight: 600; }
-    .recurso-card .link:hover { text-decoration: underline; }
-    .recurso-card .tag-recurso {
-      display: inline-block; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px;
-      background: rgba(108,99,255,0.15); color: var(--accent); margin-bottom: 8px;
-    }
-    .categoria-recursos { margin-bottom: 28px; }
-    .categoria-recursos h3 { font-size: 1.05rem; margin-bottom: 12px; color: var(--accent2); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    /* Scrollbar minimalista */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
 
-    /* ========== ROTINA E MILESTONES ========== */
-    .pergunta-rotina { margin-bottom: 16px; }
-    .pergunta-rotina label { font-size: 0.95rem; color: var(--text); margin-bottom: 6px; }
-    .resultado-rotina {
-      display: none; background: var(--surface2); border: 1px solid var(--accent);
-      border-radius: 10px; padding: 20px; margin-top: 16px; white-space: pre-wrap; line-height: 1.6;
-    }
-    .milestone { display: flex; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); }
-    .milestone:last-child { border-bottom: none; }
-    .milestone .mes { min-width: 80px; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
-    .milestone .desc { color: var(--text2); font-size: 0.9rem; line-height: 1.5; }
-
-    /* ========== RESPONSIVO ========== */
-    @media (max-width: 768px) {
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
-      .tabs { flex-direction: column; }
-      body { padding: 12px; }
-      .atividade-card .topo { flex-direction: column; }
-      .atividade-card .acoes { width: 100%; justify-content: flex-end; }
-    }
   </style>
 </head>
 <body>
 <div class="app">
   <header>
     <h1>Game Dev Planner</h1>
-    <p>Organize a criação do seu jogo 3D com Unity — rotina, recursos e planejamento</p>
+    <p>Unity Workflow • Yoni & Schalom</p>
   </header>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('rotina')">Rotina</button>
-    <button class="tab-btn" onclick="switchTab('recursos')">Recursos</button>
-    <button class="tab-btn" onclick="switchTab('formular')">Formular Rotina</button>
+  <div class="tabs glass">
+    <button class="tab-btn active" onclick="switchTab('tarefas')">Tarefas & Código</button>
+    <button class="tab-btn" onclick="switchTab('lore')">Lore Timeline</button>
+    <button class="tab-btn" onclick="switchTab('rotina')">Formular Rotina</button>
   </div>
 
-  <div id="tab-rotina" class="tab-content active">
+  <!-- TAB: TAREFAS -->
+  <div id="tab-tarefas" class="tab-content active">
     <div class="grid-2">
-      <div class="card">
-        <h2>Nova Atividade</h2>
+      <!-- Form Container -->
+      <div class="card glass">
+        <h2>Nova Tarefa</h2>
         <form id="form-atividade" onsubmit="addAtividade(event)">
           <div class="form-group">
-            <label>Título</label>
-            <input type="text" id="input-titulo" required placeholder="Ex: Criar sistema de inventário">
+            <label>O que precisa ser feito?</label>
+            <input type="text" id="input-titulo" required placeholder="Ex: Refatorar sistema de colisão">
           </div>
-          <div class="form-group">
-            <label>Descrição</label>
-            <textarea id="input-descricao" placeholder="Detalhes da atividade..."></textarea>
-          </div>
-          <div class="grid-2">
+          <div class="grid-2" style="gap:16px">
             <div class="form-group">
               <label>Responsável</label>
               <select id="input-responsavel">
+                <option value="yoni">Yoni (Tech/Código)</option>
                 <option value="schalom">Schalom (Lore/História)</option>
-                <option value="yoni">Yoni (Código/Técnico)</option>
                 <option value="ambos">Ambos</option>
               </select>
             </div>
             <div class="form-group">
               <label>Prioridade</label>
               <select id="input-prioridade">
-                <option value="alta">Alta</option>
+                <option value="alta">Alta (Blocker)</option>
                 <option value="media" selected>Média</option>
-                <option value="baixa">Baixa</option>
+                <option value="baixa">Baixa (Polimento)</option>
               </select>
             </div>
           </div>
-          <div class="grid-2">
-            <div class="form-group">
-              <label>Categoria</label>
-              <select id="input-categoria">
-                <option value="aprendizado">Aprendizado</option>
-                <option value="codigo">Código / Sistemas</option>
-                <option value="lore">Lore / História</option>
-                <option value="design">Design / Arte</option>
-                <option value="audio">Áudio / Música</option>
-                <option value="testes">Testes / QA</option>
-                <option value="organizacao">Organização</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Data</label>
-              <input type="date" id="input-data">
-            </div>
-          </div>
-          <div class="flex gap-8 mt-4">
-            <button type="submit" class="btn btn-primary">Adicionar</button>
-            <button type="button" class="btn btn-outline btn-sm" onclick="abrirSugestoes()">Sugerir atividades</button>
-          </div>
+          <button type="submit" class="btn btn-primary">Adicionar ao Board</button>
         </form>
       </div>
 
-      <div class="card">
-        <h2>Progresso</h2>
-        <div class="flex-between">
-          <span class="progress-text" id="progress-text">0 de 0 concluídas</span>
-          <span class="progress-text" id="progress-pct">0%</span>
-        </div>
-        <div class="progress-bar">
-          <div class="fill" id="progress-fill" style="width:0%"></div>
-        </div>
-        <div class="grid-3 mt-16">
-          <div class="stat-box">
-            <div class="stat-number" style="color:var(--accent)" id="stat-total">0</div>
-            <div class="stat-label">Total</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number" style="color:var(--accent2)" id="stat-concluidas">0</div>
-            <div class="stat-label">Feitas</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number" style="color:var(--accent3)" id="stat-pendentes">0</div>
-            <div class="stat-label">Pendentes</div>
+      <!-- Board Container -->
+      <div class="card glass" style="display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2 style="margin:0;">Board de Execução</h2>
+          <div style="display:flex; gap:8px;">
+            <select id="filtro-responsavel" onchange="renderAtividades()" style="padding:8px 12px; width:auto; border-radius:8px;">
+              <option value="todos">Todos</option>
+              <option value="yoni">Só Yoni</option>
+              <option value="schalom">Só Schalom</option>
+            </select>
+            <button class="btn-outline" style="border-radius:8px;" onclick="limparConcluidas()">Limpar Feitas</button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="flex-between wrap gap-8 mb-12">
-        <h2>Lista de Atividades</h2>
-        <div class="flex gap-8 wrap">
-          <select id="filtro-responsavel" onchange="atualizarFiltros()">
-            <option value="todos">Todos responsáveis</option>
-            <option value="schalom">Schalom</option>
-            <option value="yoni">Yoni</option>
-            <option value="ambos">Ambos</option>
-          </select>
-          <select id="filtro-categoria" onchange="atualizarFiltros()">
-            <option value="todos">Todas categorias</option>
-            <option value="aprendizado">Aprendizado</option>
-            <option value="codigo">Código</option>
-            <option value="lore">Lore</option>
-            <option value="design">Design</option>
-            <option value="audio">Áudio</option>
-            <option value="testes">Testes</option>
-            <option value="organizacao">Organização</option>
-          </select>
-          <select id="filtro-status" onchange="atualizarFiltros()">
-            <option value="todos">Todos status</option>
-            <option value="pendente">Pendentes</option>
-            <option value="concluida">Concluídas</option>
-          </select>
-          <button class="btn btn-danger btn-sm" onclick="limparTudo()">Limpar tudo</button>
-          <button class="btn btn-outline btn-sm" onclick="exportAtividades()">Exportar</button>
-          <button class="btn btn-outline btn-sm" onclick="importFromClipboard()">Colar</button>
-          <button class="btn btn-outline btn-sm" onclick="triggerImportFile()">Importar</button>
-          <input type="file" id="file-import" accept="application/json" style="display:none" onchange="handleImportFile(event)">
-        </div>
-      </div>
-      <div id="lista-atividades"></div>
-    </div>
-
-    <div id="modal-sugestoes" class="modal-overlay">
-      <div class="modal-content">
-        <div class="flex-between mb-12">
-          <h2 style="color:var(--accent2);">Sugestões de Atividades</h2>
-          <button class="btn btn-sm btn-outline" onclick="fecharSugestoes()">✕ Fechar</button>
-        </div>
-        <p style="color:var(--text2); margin-bottom:16px; font-size:0.9rem;">Clique em uma sugestão para adicionar ao formulário:</p>
-        <div class="sugestoes-grid" id="grid-sugestoes">
-          </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="tab-recursos" class="tab-content">
-    <div class="card">
-      <h2>Ferramentas & Recursos</h2>
-      <p style="color:var(--text2); margin-bottom:16px;">Curadoria de ferramentas, cursos e sites para criar seu jogo 3D com Unity.</p>
-
-      <div class="categoria-recursos">
-        <h3>Unity & Programação</h3>
-        <div class="grid-3">
-          <div class="recurso-card">
-            <span class="tag-recurso">Curso Oficial</span>
-            <h4>Unity Learn</h4>
-            <p>Cursos gratuitos oficiais da Unity, desde o básico até avançado. Ideal para quem está começando.</p>
-            <a class="link" href="https://learn.unity.com" target="_blank">learn.unity.com →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">YouTube</span>
-            <h4>Brackeys</h4>
-            <p>O melhor canal para aprender Unity. Tutoriais claros, diretos e bem produzidos. Essencial.</p>
-            <a class="link" href="https://youtube.com/@Brackeys" target="_blank">YouTube/Brackeys →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Documentação</span>
-            <h4>Scripting API Unity</h4>
-            <p>Documentação oficial completa de todas as classes e métodos do Unity.</p>
-            <a class="link" href="https://docs.unity3d.com/ScriptReference/" target="_blank">docs.unity3d.com →</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="categoria-recursos">
-        <h3>Modelagem 3D & Arte</h3>
-        <div class="grid-3">
-          <div class="recurso-card">
-            <span class="tag-recurso">Ferramenta</span>
-            <h4>Blender</h4>
-            <p>Modelagem 3D gratuita e completa. Crie personagens, cenários, props. Curva de aprendizado, mas essencial.</p>
-            <a class="link" href="https://www.blender.org" target="_blank">blender.org →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Animações</span>
-            <h4>Mixamo (Adobe)</h4>
-            <p>Animações de personagens prontas. Escolha animações, customize e exporte direto pra Unity.</p>
-            <a class="link" href="https://www.mixamo.com" target="_blank">mixamo.com →</a>
-          </div>
-          <div class="recurso-card">
-            <span class="tag-recurso">Assets Grátis</span>
-            <h4>Unity Asset Store</h4>
-            <p>Milhares de assets gratuitos e pagos. A Unity libera assets gratuitos todo mês.</p>
-            <a class="link" href="https://assetstore.unity.com" target="_blank">assetstore.unity.com →</a>
-          </div>
+        <div id="lista-atividades" style="flex:1; overflow-y:auto; max-height:420px; padding-right:10px;">
+          <!-- JS injeta as tarefas aqui -->
         </div>
       </div>
     </div>
   </div>
 
-  <div id="tab-formular" class="tab-content">
-    <div class="grid-2">
-      <div class="card">
-        <h2>Gerar Rotina Semanal</h2>
-        <p style="color:var(--text2); font-size:0.9rem; margin-bottom:12px;">Responda abaixo para gerar uma sugestão de rotina personalizada.</p>
-        <div class="pergunta-rotina">
-          <label>Quantas horas por semana vocês podem dedicar ao jogo?</label>
+  <!-- TAB: LORE TIMELINE -->
+  <div id="tab-lore" class="tab-content">
+    <div class="card glass">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+        <h2 style="margin:0;">Linha do Tempo da Lore</h2>
+        <button class="btn btn-outline" onclick="addLoreEvent()">+ Novo Evento</button>
+      </div>
+      <p style="color:var(--text-secondary); margin-bottom:30px;">Schalom, organize os eventos canônicos da história aqui. A ordem visual ajuda a planejar as quests com o código.</p>
+      <div class="timeline" id="lore-timeline"></div>
+    </div>
+  </div>
+
+  <!-- TAB: FORMULAR ROTINA -->
+  <div id="tab-rotina" class="tab-content">
+    <div class="card glass">
+      <h2>Gerador Visual de Rotina</h2>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Carga Horária Semanal</label>
           <select id="rotina-horas">
-            <option value="5">~5h (pouco tempo)</option>
-            <option value="10" selected>~10h (meio período)</option>
-            <option value="20">~20h (meio período intenso)</option>
-            <option value="35">~35h+ (quase full-time)</option>
+            <option value="light">Light (Finais de Semana ~10h)</option>
+            <option value="pro" selected>Pro (Noites + FDS ~20h)</option>
+            <option value="crunch">Crunch (Quase Full-time ~35h+)</option>
           </select>
         </div>
-        <div class="pergunta-rotina">
-          <label>Qual o foco atual do projeto?</label>
+        <div class="form-group">
+          <label>Foco da Sprint</label>
           <select id="rotina-foco">
-            <option value="aprendizado">Aprendizado — estou aprendendo Unity ainda</option>
-            <option value="prototipo">Prototipação — criar o primeiro protótipo jogável</option>
-            <option value="mecanicas">Mecânicas — implementar sistemas do jogo</option>
-            <option value="conteudo">Conteúdo — missões, mapa, história, quests</option>
-            <option value="polimento">Polimento — UI, áudio, otimização, bugs</option>
+            <option value="core">Core Gameplay (Mecânicas base)</option>
+            <option value="world">Worldbuilding (Mapa e História)</option>
+            <option value="polish">Polimento & UI</option>
           </select>
         </div>
-        <div class="pergunta-rotina">
-          <label>Qual área você (lore) quer focar nesta semana?</label>
-          <select id="rotina-area-vc">
-            <option value="lore">Escrever lore / história principal</option>
-            <option value="quests">Criar quests e missões</option>
-            <option value="personagens">Desenvolver personagens e diálogos</option>
-            <option value="mundo">Desenhar o mapa/mundo (documentação)</option>
-            <option value="design">Game design — regras, sistemas, progressão</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" onclick="gerarRotina()">Gerar Rotina</button>
-        <div id="resultado-rotina" class="resultado-rotina"></div>
       </div>
+      <button class="btn btn-primary" onclick="gerarRotinaVisual()">Gerar Cronograma</button>
 
-      <div class="card">
-        <h2>Milestones Sugeridas</h2>
-        <p style="color:var(--text2); font-size:0.85rem; margin-bottom:8px;">Marco sugerido para um jogo 3D mundo aberto com Unity:</p>
-        <div class="milestone">
-          <div class="mes">Mês 1-2</div>
-          <div class="desc"><strong>Fundação</strong> — Curso introdutório de Unity, mover câmera 3D, protótipo de movimento do personagem. Esboço de lore e GDD.</div>
-        </div>
-        <div class="milestone">
-          <div class="mes">Mês 3-4</div>
-          <div class="desc"><strong>Mecânicas base</strong> — Interação com objetos, inventário básico, NPCs. Design das quests principais.</div>
+      <div id="rotina-resultado" style="display:none; margin-top:40px;">
+        <h3 style="margin-bottom: 20px; font-weight: 500;">Sua Sprint Sugerida</h3>
+        <div class="rotina-grid">
+          <div class="dia-card"><div class="dia-titulo">SEG</div><div id="d1"></div></div>
+          <div class="dia-card"><div class="dia-titulo">TER</div><div id="d2"></div></div>
+          <div class="dia-card"><div class="dia-titulo">QUA</div><div id="d3"></div></div>
+          <div class="dia-card"><div class="dia-titulo">QUI</div><div id="d4"></div></div>
+          <div class="dia-card"><div class="dia-titulo">SEX</div><div id="d5"></div></div>
+          <div class="dia-card" style="background:rgba(255,255,255,0.04);"><div class="dia-titulo" style="color:var(--text-primary)">SÁB</div><div id="d6"></div></div>
+          <div class="dia-card" style="background:rgba(255,255,255,0.04);"><div class="dia-titulo" style="color:var(--text-primary)">DOM</div><div id="d7"></div></div>
         </div>
       </div>
     </div>
   </div>
+
 </div>
 
+<!-- Inclusão do Supabase -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
-  // ========== 1. CONFIGURAÇÃO ==========
+  // ========== CONFIGURAÇÃO SUPABASE ==========
   const SUPABASE_URL = 'https://uhljjblxpeaseiqovwwu.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobGpqYmx4cGVhc2VpcW92d3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNDMzODYsImV4cCI6MjA5NzYxOTM4Nn0.p0vo0IYg9VcWFCjkrJk3CnXZlxA_OG1kzYWhgyVxkHE';
-  const STORAGE_KEY = 'gameDevAtividades';
   
   let supabaseClient = null;
-  let USE_LOCAL = false;
+  let useLocal = false;
   
   try {
-    if (!window.supabase) throw new Error('Supabase indisponível');
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    if (window.supabase) {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } else {
+      throw new Error('Supabase library não carregada');
+    }
   } catch (err) {
-    console.warn('Rodando em modo LocalStorage (sem backend).');
-    USE_LOCAL = true;
+    console.warn('Rodando em modo LocalStorage (Supabase inacessível).', err);
+    useLocal = true;
   }
 
-  // ========== 2. ESTADO GLOBAL ==========
-  let atividades = [];
-  let filtros = { responsavel: 'todos', categoria: 'todos', status: 'todos' };
+  // ========== ESTADO GLOBAL ==========
+  let tarefas = [];
+  let loreEvents = JSON.parse(localStorage.getItem('gamedev_lore') || '[{"id":1,"titulo":"O Início","desc":"O personagem acorda sem memória na floresta de silício."}]');
 
-  // ========== 3. INICIALIZAÇÃO ==========
-  window.onload = async function() {
-    const inputData = document.getElementById('input-data');
-    if (inputData) inputData.value = new Date().toISOString().split('T')[0];
-    
-    popularSugestoes();
-    await carregarDadosDoBanco();
-    escutarMudancasEmTempoReal();
+  window.onload = async () => {
+    await carregarTarefas();
+    renderLore();
   };
 
-  // ========== 4. NAVEGAÇÃO UI ==========
   function switchTab(tab) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -540,269 +412,187 @@
     document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`).classList.add('active');
   }
 
-  function formatarData(data) {
-    if (!data) return '';
-    return new Date(data).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-  }
-
-  // ========== 5. LÓGICA DE ATIVIDADES (CRUD) ==========
-  async function carregarDadosDoBanco() {
-    if (USE_LOCAL) {
-      atividades = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  // ========== CRUD TAREFAS (SUPABASE + LOCAL FALLBACK) ==========
+  
+  async function carregarTarefas() {
+    if (useLocal) {
+      tarefas = JSON.parse(localStorage.getItem('gamedev_tarefas') || '[]');
       renderAtividades();
       return;
     }
+
     try {
       const { data, error } = await supabaseClient.from('tasks').select('*').order('id', { ascending: false });
       if (error) throw error;
-      atividades = data.map(item => ({
-        id: item.id, titulo: item.title, descricao: item.description,
-        responsavel: item.assigned_to, prioridade: item.priority,
-        categoria: item.category, data: item.due_date, concluida: item.is_completed
+      
+      tarefas = data.map(item => ({
+        id: item.id,
+        titulo: item.title,
+        responsavel: item.assigned_to,
+        prioridade: item.priority,
+        concluida: item.is_completed
       }));
       renderAtividades();
     } catch (err) {
-      console.error(err); USE_LOCAL = true; carregarDadosDoBanco();
+      console.error('Erro ao buscar do Supabase, caindo pro LocalStorage', err);
+      useLocal = true;
+      carregarTarefas();
     }
   }
 
   async function addAtividade(e) {
     e.preventDefault();
-    const titulo = document.getElementById('input-titulo').value.trim();
-    if (!titulo) return;
+    const titulo = document.getElementById('input-titulo').value;
+    const responsavel = document.getElementById('input-responsavel').value;
+    const prioridade = document.getElementById('input-prioridade').value;
+    
+    document.getElementById('input-titulo').value = '';
 
-    const payload = {
-      title: titulo,
-      description: document.getElementById('input-descricao').value.trim(),
-      assigned_to: document.getElementById('input-responsavel').value,
-      priority: document.getElementById('input-prioridade').value,
-      category: document.getElementById('input-categoria').value,
-      due_date: document.getElementById('input-data').value || null,
-      is_completed: false
-    };
-
-    if (USE_LOCAL) {
-      atividades.unshift({ ...payload, id: Date.now(), titulo: payload.title, descricao: payload.description, responsavel: payload.assigned_to, prioridade: payload.priority, categoria: payload.category, data: payload.due_date, concluida: payload.is_completed });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
-      limparFormulario();
+    if (useLocal) {
+      const novaTarefa = { id: Date.now(), titulo, responsavel, prioridade, concluida: false };
+      tarefas.unshift(novaTarefa);
+      localStorage.setItem('gamedev_tarefas', JSON.stringify(tarefas));
       renderAtividades();
       return;
     }
 
     try {
+      const payload = { title: titulo, assigned_to: responsavel, priority: prioridade, is_completed: false };
       await supabaseClient.from('tasks').insert([payload]);
-      limparFormulario();
-      carregarDadosDoBanco();
-    } catch (err) { console.error(err); }
+      carregarTarefas(); // recarrega a lista real do banco
+    } catch (err) {
+      console.error(err);
+    }
   }
 
-  async function toggleConcluir(id) {
-    const atv = atividades.find(a => a.id === id);
-    if (!atv) return;
+  async function toggleTarefa(id) {
+    const t = tarefas.find(x => x.id === id);
+    if(!t) return;
     
-    if (USE_LOCAL) {
-      atv.concluida = !atv.concluida;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
+    if (useLocal) {
+      t.concluida = !t.concluida;
+      localStorage.setItem('gamedev_tarefas', JSON.stringify(tarefas));
       renderAtividades();
       return;
     }
-    await supabaseClient.from('tasks').update({ is_completed: !atv.concluida }).eq('id', id);
-    carregarDadosDoBanco();
+
+    try {
+      await supabaseClient.from('tasks').update({ is_completed: !t.concluida }).eq('id', id);
+      carregarTarefas();
+    } catch (err) {
+      console.error(err);
+    }
   }
 
-  async function excluirAtividade(id) {
-    if (!confirm('Excluir esta atividade?')) return;
-    if (USE_LOCAL) {
-      atividades = atividades.filter(a => a.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
+  async function limparConcluidas() {
+    if (useLocal) {
+      tarefas = tarefas.filter(t => !t.concluida);
+      localStorage.setItem('gamedev_tarefas', JSON.stringify(tarefas));
       renderAtividades();
       return;
     }
-    await supabaseClient.from('tasks').delete().eq('id', id);
-    carregarDadosDoBanco();
-  }
 
-  async function editarAtividade(id) {
-    const atv = atividades.find(a => a.id === id);
-    const novoTitulo = prompt('Editar título:', atv.titulo);
-    if (!novoTitulo || novoTitulo.trim() === '') return;
-
-    if (USE_LOCAL) {
-      atv.titulo = novoTitulo.trim();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
-      renderAtividades();
-      return;
+    try {
+      const idsParaExcluir = tarefas.filter(t => t.concluida).map(t => t.id);
+      if (idsParaExcluir.length > 0) {
+        await supabaseClient.from('tasks').delete().in('id', idsParaExcluir);
+        carregarTarefas();
+      }
+    } catch (err) {
+      console.error(err);
     }
-    await supabaseClient.from('tasks').update({ title: novoTitulo.trim() }).eq('id', id);
-    carregarDadosDoBanco();
-  }
-
-  async function limparTudo() {
-    if (!confirm('Excluir TODAS as atividades?')) return;
-    if (USE_LOCAL) {
-      atividades = [];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
-      renderAtividades();
-      return;
-    }
-    await supabaseClient.from('tasks').delete().gte('id', 0);
-    carregarDadosDoBanco();
-  }
-
-  // ========== 6. RENDERIZAÇÃO DA LISTA ==========
-  function atualizarFiltros() {
-    filtros.responsavel = document.getElementById('filtro-responsavel').value;
-    filtros.categoria = document.getElementById('filtro-categoria').value;
-    filtros.status = document.getElementById('filtro-status').value;
-    renderAtividades();
   }
 
   function renderAtividades() {
     const lista = document.getElementById('lista-atividades');
-    const filtradas = atividades.filter(atv => {
-      const matchR = filtros.responsavel === 'todos' || atv.responsavel === filtros.responsavel;
-      const matchC = filtros.categoria === 'todos' || atv.categoria === filtros.categoria;
-      const matchS = filtros.status === 'todos' || (filtros.status === 'concluida' && atv.concluida) || (filtros.status === 'pendente' && !atv.concluida);
-      return matchR && matchC && matchS;
-    });
-
-    if (filtradas.length === 0) {
-      lista.innerHTML = `<div class="empty-state"><h3>Nenhuma atividade encontrada</h3><p>Ajuste os filtros ou adicione uma nova.</p></div>`;
-    } else {
-      lista.innerHTML = filtradas.map(atv => `
-        <div class="atividade-card ${atv.concluida ? 'concluida' : ''}">
-          <div class="topo">
-            <div class="info">
-              <h3>${atv.titulo}</h3>
-              <p>${atv.descricao}</p>
-            </div>
-            <div class="acoes">
-              <button class="btn btn-sm btn-primary" onclick="toggleConcluir(${atv.id})">${atv.concluida ? '✔️ Feita' : '❌ Pendente'}</button>
-              <button class="btn btn-sm btn-outline" onclick="editarAtividade(${atv.id})">✏️ Editar</button>
-              <button class="btn btn-sm btn-danger" onclick="excluirAtividade(${atv.id})">🗑️</button>
-            </div>
-          </div>
-          <div class="tags">
-            ${atv.responsavel !== 'ambos' ? `<span class="tag responsavel-${atv.responsavel}">${atv.responsavel === 'schalom' ? 'Schalom (Lore)' : 'Yoni (Técnico)'}</span>` : ''}
-            <span class="tag prioridade-${atv.prioridade}">Pri: ${atv.prioridade}</span>
-            <span class="tag categoria">${atv.categoria}</span>
-          </div>
-          <div class="data">${atv.data ? `📅 ${formatarData(atv.data)}` : '📅 Sem data'}</div>
-        </div>
-      `).join('');
-    }
-
-    // Atualiza estatísticas
-    const concluidas = atividades.filter(a => a.concluida).length;
-    const pct = atividades.length ? Math.round((concluidas / atividades.length) * 100) : 0;
+    const filtro = document.getElementById('filtro-responsavel').value;
     
-    document.getElementById('progress-text').innerText = `${concluidas} de ${atividades.length} concluídas`;
-    document.getElementById('progress-pct').innerText = `${pct}%`;
-    document.getElementById('progress-fill').style.width = `${pct}%`;
-    document.getElementById('stat-total').innerText = atividades.length;
-    document.getElementById('stat-concluidas').innerText = concluidas;
-    document.getElementById('stat-pendentes').innerText = atividades.length - concluidas;
+    let html = '';
+    tarefas.forEach(t => {
+      if(filtro !== 'todos' && t.responsavel !== filtro && t.responsavel !== 'ambos') return;
+      
+      const tagClass = t.responsavel;
+      const respNome = t.responsavel.charAt(0).toUpperCase() + t.responsavel.slice(1);
+      
+      html += `
+        <div class="atividade-card resp-${t.responsavel} ${t.concluida ? 'concluida' : ''}">
+          <div class="tag-container">
+            <span class="tag ${tagClass}">${respNome}</span>
+            <span class="tag pri">${t.prioridade.toUpperCase()}</span>
+          </div>
+          <div class="titulo-tarefa">${t.titulo}</div>
+          <button class="acao-btn" onclick="toggleTarefa(${t.id})">
+            ${t.concluida ? 'Desfazer' : 'Marcar como Feito'}
+          </button>
+        </div>
+      `;
+    });
+    lista.innerHTML = html || '<p style="text-align:center; color:var(--text-secondary); padding:30px 0;">Board limpo. GG!</p>';
   }
 
-  // ========== 7. EXPORTAÇÃO E IMPORTAÇÃO ==========
-  function exportAtividades() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(atividades, null, 2));
-    const a = document.createElement('a');
-    a.href = dataStr;
-    a.download = "planner_gamedev.json";
-    a.click();
+  // ========== LORE (Mantido em LocalStorage para simplicidade do protótipo) ==========
+  function addLoreEvent() {
+    const titulo = prompt("Título do Evento (Ex: A Grande Guerra):");
+    if(!titulo) return;
+    const desc = prompt("Descrição breve do que acontece:");
+    if(!desc) return;
+    loreEvents.push({ id: Date.now(), titulo, desc });
+    localStorage.setItem('gamedev_lore', JSON.stringify(loreEvents));
+    renderLore();
   }
 
-  function triggerImportFile() { document.getElementById('file-import').click(); }
-
-  function handleImportFile(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => processImportedData(e.target.result);
-    reader.readAsText(file);
+  function removerLore(id) {
+    if(confirm('Excluir este evento da lore?')) {
+      loreEvents = loreEvents.filter(x => x.id !== id);
+      localStorage.setItem('gamedev_lore', JSON.stringify(loreEvents));
+      renderLore();
+    }
   }
 
-  async function importFromClipboard() {
-    try {
-      const text = await navigator.clipboard.readText();
-      processImportedData(text);
-    } catch (err) { alert('Erro ao ler área de transferência.'); }
+  function renderLore() {
+    const container = document.getElementById('lore-timeline');
+    let html = '';
+    loreEvents.forEach((ev, index) => {
+      html += `
+        <div class="timeline-item">
+          <div class="lore-content">
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+              <h3 style="color:var(--text-primary); font-size:1.1rem; font-weight:600;">Capítulo ${index + 1}: ${ev.titulo}</h3>
+              <button onclick="removerLore(${ev.id})" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.2rem;">&times;</button>
+            </div>
+            <p style="font-size:0.95rem; line-height:1.6; color:var(--text-secondary)">${ev.desc}</p>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
   }
 
-  function processImportedData(text) {
-    try {
-      const parsed = JSON.parse(text);
-      if (!Array.isArray(parsed)) throw new Error();
-      if (USE_LOCAL) {
-        atividades = [...atividades, ...parsed];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades));
-        renderAtividades();
-        alert('Importado com sucesso!');
-      } else {
-        alert('Importação direta p/ o Supabase requer loop (não implementado por segurança). Use o modo local.');
-      }
-    } catch (e) { alert('JSON inválido.'); }
-  }
+  // ========== ROTINA VISUAL ==========
+  function gerarRotinaVisual() {
+    document.getElementById('rotina-resultado').style.display = 'block';
+    const perfil = document.getElementById('rotina-horas').value;
+    
+    for(let i=1; i<=7; i++) document.getElementById(`d${i}`).innerHTML = '';
+    
+    const blockYoni = (texto) => `<div class="block yoni">YONI<br>${texto}</div>`;
+    const blockSchalom = (texto) => `<div class="block schalom">SCHA<br>${texto}</div>`;
+    const blockAmbos = (texto) => `<div class="block reuniao">PLAYTEST<br>${texto}</div>`;
 
-  // ========== 8. GERADOR DE ROTINA ==========
-  function gerarRotina() {
-    const horas = document.getElementById('rotina-horas').value;
-    const focoSelect = document.getElementById('rotina-foco');
-    const areaSelect = document.getElementById('rotina-area-vc');
-    const foco = focoSelect.options[focoSelect.selectedIndex].text;
-    const area = areaSelect.options[areaSelect.selectedIndex].text;
-
-    const res = document.getElementById('resultado-rotina');
-    res.style.display = 'block';
-    res.innerHTML = `<strong>🎯 Meta da Semana (${horas}h focadas em: ${foco})</strong>\n\n` +
-      `<strong>Schalom (Lore/História):</strong>\nSeu foco é <em>${area}</em>. Invista cerca de ${Math.floor(horas/2)} horas documentando e preparando o material para o jogo. Lembre-se de não criar nada complexo demais que o código ainda não suporte.\n\n` +
-      `<strong>Yoni (Técnico/Código):</strong>\nO foco é implementar os sistemas bases do Unity que conversem com a fase atual de ${foco}.\n\n` +
-      `<em>Dica: Usem as horas restantes para alinhar e testar juntos o que foi feito!</em>`;
-  }
-
-  // ========== 9. SUGESTÕES (MODAL) ==========
-  const ideiasSugestoes = [
-    { t: 'Criar Repositório (Git)', d: 'Configurar o Github para não perderem os arquivos do Unity.', r: 'yoni', c: 'organizacao', p: 'alta' },
-    { t: 'Prototipar Movimento', d: 'Fazer o personagem andar e pular.', r: 'yoni', c: 'codigo', p: 'alta' },
-    { t: 'Definir Regras do Mundo', d: 'Escrever o básico da lore: cenário, época e regras.', r: 'schalom', c: 'lore', p: 'media' },
-    { t: 'Esboçar NPC Principal', d: 'Criar o primeiro personagem de diálogo.', r: 'schalom', c: 'design', p: 'baixa' }
-  ];
-
-  function popularSugestoes() {
-    const grid = document.getElementById('grid-sugestoes');
-    grid.innerHTML = ideiasSugestoes.map(s => `
-      <div class="sugestao-item" onclick="aplicarSugestao('${s.t}', '${s.d}', '${s.r}', '${s.c}', '${s.p}')">
-        <h4>${s.t}</h4>
-        <p>${s.d}</p>
-      </div>
-    `).join('');
-  }
-
-  function abrirSugestoes() { document.getElementById('modal-sugestoes').classList.add('active'); }
-  function fecharSugestoes() { document.getElementById('modal-sugestoes').classList.remove('active'); }
-
-  function aplicarSugestao(titulo, desc, resp, cat, pri) {
-    document.getElementById('input-titulo').value = titulo;
-    document.getElementById('input-descricao').value = desc;
-    document.getElementById('input-responsavel').value = resp;
-    document.getElementById('input-categoria').value = cat;
-    document.getElementById('input-prioridade').value = pri;
-    fecharSugestoes();
-  }
-
-  // ========== UTILS ==========
-  function limparFormulario() {
-    document.getElementById('form-atividade').reset();
-    document.getElementById('input-data').value = new Date().toISOString().split('T')[0];
-    document.getElementById('input-titulo').focus();
-  }
-
-  function escutarMudancasEmTempoReal() {
-    if (USE_LOCAL || !supabaseClient) return;
-    supabaseClient.channel('mudancas-planner')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => carregarDadosDoBanco())
-      .subscribe();
+    if(perfil === 'pro') {
+      document.getElementById('d1').innerHTML = blockYoni('Lógica Base') + blockSchalom('Escrever Quests');
+      document.getElementById('d2').innerHTML = blockYoni('Sistemas (2h)');
+      document.getElementById('d3').innerHTML = blockSchalom('Revisão Lore (2h)');
+      document.getElementById('d4').innerHTML = blockYoni('Refatoração') + blockSchalom('Diálogos');
+      document.getElementById('d5').innerHTML = blockAmbos('Alinhamento (1h)');
+      document.getElementById('d6').innerHTML = blockYoni('Implementação (4h)') + blockSchalom('Level Design (4h)');
+      document.getElementById('d7').innerHTML = blockAmbos('Jogar a Build');
+    } else {
+      document.getElementById('d1').innerHTML = '<span style="font-size:0.8rem; color:var(--text-secondary)">Descanso</span>';
+      document.getElementById('d3').innerHTML = blockYoni('Estudo Unity (1h)') + blockSchalom('Estudo Lore (1h)');
+      document.getElementById('d6').innerHTML = blockYoni('Código (4h)') + blockSchalom('Mundo (4h)');
+      document.getElementById('d7').innerHTML = blockAmbos('Sincronizar & Testar');
+    }
   }
 </script>
 </body>
