@@ -19,6 +19,7 @@
       --accent-yoni: #0A84FF;    /* Azul Tech Premium */
       --accent-schalom: #FF453A; /* Vermelho vibrante */
       --accent-ambos: #BF5AF2;   /* Roxo luxo */
+      --accent-success: #30D158; /* Verde Apple */
       
       --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
       --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
@@ -35,7 +36,6 @@
       min-height: 100vh;
       padding: 40px 20px;
       -webkit-font-smoothing: antialiased;
-      /* Fundo minimalista com leve brilho central */
       background-image: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 60%);
     }
     
@@ -54,7 +54,7 @@
     /* ========== HEADER ========== */
     header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 30px;
     }
     header h1 {
       font-size: 2.5rem;
@@ -69,20 +69,131 @@
       font-weight: 400;
     }
 
+    /* ========== MILESTONES INTERATIVAS E GERENCIÁVEIS ========== */
+    .milestones-container {
+      margin-bottom: 32px;
+      padding: 24px;
+    }
+    .milestones-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .milestones-header h3 {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .milestones-wrapper {
+      position: relative;
+      max-width: 900px;
+      margin: 20px auto 40px auto;
+      padding: 10px 0;
+    }
+    .milestones-line-bg {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--border);
+      transform: translateY(-50%);
+      z-index: 1;
+    }
+    .milestone-progress {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      height: 2px;
+      background: var(--accent-yoni);
+      transform: translateY(-50%);
+      z-index: 1;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .milestones-nodes-container {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+    }
+    .milestone-node-block {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .milestone-node {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .milestone-node:hover {
+      border-color: var(--text-primary);
+      transform: scale(1.2);
+    }
+    .milestone-node.active {
+      border-color: var(--accent-yoni);
+      background: var(--accent-yoni);
+      box-shadow: 0 0 12px var(--accent-yoni);
+    }
+    .milestone-label {
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      font-weight: 500;
+      transition: color 0.3s;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .milestone-node-block.active-milestone .milestone-label {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .btn-delete-milestone {
+      position: absolute;
+      top: -22px;
+      background: none;
+      border: none;
+      color: var(--accent-schalom);
+      font-size: 0.8rem;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .milestone-node-block:hover .btn-delete-milestone {
+      opacity: 0.7;
+    }
+    .btn-delete-milestone:hover { opacity: 1 !important; }
+
     /* ========== TABS ========== */
     .tabs {
-      display: inline-flex;
+      display: flex;
       background: var(--surface);
       padding: 4px;
       border-radius: 14px;
       margin-bottom: 32px;
       border: 1px solid var(--border);
-      position: relative;
-      left: 50%;
-      transform: translateX(-50%);
+      max-width: 450px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .tab-btn {
-      padding: 10px 24px;
+      flex: 1;
+      padding: 10px 12px;
       border: none;
       background: transparent;
       color: var(--text-secondary);
@@ -91,6 +202,7 @@
       border-radius: 10px;
       transition: all 0.3s ease;
       font-weight: 500;
+      text-align: center;
     }
     .tab-btn:hover { color: var(--text-primary); }
     .tab-btn.active { 
@@ -109,7 +221,7 @@
     /* ========== LAYOUT ========== */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .card { padding: 30px; margin-bottom: 24px; }
-    .card h2 { font-size: 1.3rem; margin-bottom: 24px; font-weight: 600; letter-spacing: -0.5px; }
+    .card h2 { font-size: 1.3rem; font-weight: 600; letter-spacing: -0.5px; }
 
     /* ========== FORMS & INPUTS ========== */
     label { 
@@ -130,6 +242,24 @@
       background: rgba(255,255,255,0.03);
     }
     .form-group { margin-bottom: 20px; }
+    .search-box {
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .search-box input {
+      padding-left: 40px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,0.03);
+    }
+    .search-box::before {
+      content: '🔍';
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.9rem;
+      opacity: 0.5;
+    }
 
     /* ========== BOTÕES ========== */
     .btn {
@@ -151,9 +281,15 @@
     .btn-outline { 
       background: transparent; border: 1px solid var(--border); 
       color: var(--text-primary); width: auto; padding: 10px 16px;
+      cursor: pointer; font-weight: 500; font-size: 0.85rem;
+      border-radius: 8px; transition: all 0.2s;
     }
     .btn-outline:hover { 
       background: rgba(255,255,255,0.05); border-color: var(--border-hover);
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.8rem;
     }
 
     /* ========== ATIVIDADES (LISTA 3D EFFECT) ========== */
@@ -170,7 +306,6 @@
       flex-direction: column;
       gap: 10px;
     }
-    /* Indicador sutil de responsável */
     .atividade-card::before {
       content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
     }
@@ -178,7 +313,6 @@
     .atividade-card.resp-schalom::before { background: var(--accent-schalom); }
     .atividade-card.resp-ambos::before { background: var(--accent-ambos); }
     
-    /* Efeito de elevação (3D) no hover */
     .atividade-card:hover { 
       transform: translateY(-2px) scale(1.01); 
       background: rgba(255,255,255,0.04); 
@@ -203,8 +337,19 @@
     .tag.ambos { background: rgba(191, 90, 242, 0.15); color: var(--accent-ambos); }
     .tag.pri { border: 1px solid var(--border); color: var(--text-secondary); }
 
-    .titulo-tarefa { font-weight: 500; font-size: 1rem; color: var(--text-primary); line-height: 1.4; }
+    .titulo-tarefa { font-weight: 500; font-size: 1rem; color: var(--text-primary); line-height: 1.4; cursor: pointer; }
+    .titulo-tarefa:hover { color: #ffffff; text-decoration: underline; }
     
+    .inline-edit-panel {
+      background: rgba(0,0,0,0.4);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-top: 8px;
+      display: none;
+    }
+    .inline-edit-panel.active { display: block; }
+
     .acao-btn {
       align-self: flex-start;
       background: rgba(255,255,255,0.05);
@@ -234,26 +379,46 @@
       border-radius: 12px; padding: 20px;
     }
 
-    /* ========== ROTINA VISUAL ========== */
+    /* ========== ROTINA VISUAL OTIMIZADA ========== */
+    .rotina-actions {
+      display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end;
+    }
     .rotina-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-top: 24px; }
     .dia-card {
       background: rgba(255,255,255,0.02); border: 1px solid var(--border);
-      border-radius: 12px; padding: 14px; text-align: center;
+      border-radius: 12px; padding: 14px; text-align: center; min-height: 140px;
     }
     .dia-titulo { font-weight: 600; margin-bottom: 12px; font-size: 0.85rem; color: var(--text-secondary); }
     .block {
       padding: 10px 8px; border-radius: 8px; font-size: 0.75rem; margin-bottom: 8px; font-weight: 500;
+      text-align: left; line-height: 1.3;
     }
-    .block.yoni { background: rgba(10, 132, 255, 0.1); color: var(--accent-yoni); }
-    .block.schalom { background: rgba(255, 69, 58, 0.1); color: var(--accent-schalom); }
-    .block.reuniao { background: rgba(191, 90, 242, 0.1); color: var(--accent-ambos); }
+    .block.yoni { background: rgba(10, 132, 255, 0.1); border-left: 2px solid var(--accent-yoni); color: var(--accent-yoni); }
+    .block.schalom { background: rgba(255, 69, 58, 0.1); border-left: 2px solid var(--accent-schalom); color: var(--accent-schalom); }
+    .block.reuniao { background: rgba(191, 90, 242, 0.1); border-left: 2px solid var(--accent-ambos); color: var(--accent-ambos); }
 
-    /* Scrollbar minimalista */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+    /* ========== NOTIFICAÇÃO FLOATING ========== */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; background: var(--accent-success);
+      color: #000; padding: 12px 24px; border-radius: 8px; font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4); transform: translateY(100px); opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1000;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
 
+    /* ========== RESPONSIVIDADE (MOBILE 100%) ========== */
+    @media (max-width: 868px) {
+      body { padding: 20px 12px; }
+      header h1 { font-size: 2rem; }
+      .grid-2 { grid-template-columns: 1fr; gap: 16px; }
+      .rotina-grid { grid-template-columns: 1fr; gap: 8px; }
+      .dia-card { min-height: auto; text-align: left; display: flex; align-items: center; gap: 16px; }
+      .dia-titulo { margin-bottom: 0; min-width: 50px; }
+      .dia-card .block { margin-bottom: 0; flex: 1; }
+      .milestones-wrapper { max-width: 100%; overflow-x: auto; padding-bottom: 40px; }
+      .milestones-nodes-container { justify-content: flex-start; gap: 60px; }
+      .milestones-line-bg, .milestone-progress { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -263,16 +428,46 @@
     <p>Unity Workflow • Yoni & Schalom</p>
   </header>
 
+  <div class="card glass milestones-container">
+    <div class="milestones-header">
+      <h3>Linha de Tempo e Metas do Projeto</h3>
+      <button class="btn-outline btn-sm" onclick="toggleMilestoneForm()">+ Customizar Nova Meta</button>
+    </div>
+
+    <div id="inline-milestone-form" class="inline-edit-panel" style="margin-bottom: 24px; background: rgba(255,255,255,0.02)">
+      <h4 style="font-size:0.95rem; margin-bottom:12px; font-weight:600;">Adicionar Meta Customizada</h4>
+      <div class="grid-2" style="gap:12px; margin-bottom:12px;">
+        <div>
+          <label>Prazo/Fase (Ex: Mês 1-2, Sprint B)</label>
+          <input type="text" id="ms-input-fase" placeholder="Ex: Mês 1">
+        </div>
+        <div>
+          <label>Objetivo Principal (Ex: MVP Técnico, Alpha Combat)</label>
+          <input type="text" id="ms-input-titulo" placeholder="Ex: Protótipo de Combate">
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary btn-sm" onclick="addNewMilestone()">Inserir Meta</button>
+        <button class="btn-outline btn-sm" onclick="toggleMilestoneForm()">Cancelar</button>
+      </div>
+    </div>
+
+    <div class="milestones-wrapper">
+      <div class="milestones-line-bg"></div>
+      <div class="milestone-progress" id="milestone-bar"></div>
+      <div class="milestones-nodes-container" id="milestones-render-target">
+        </div>
+    </div>
+  </div>
+
   <div class="tabs glass">
     <button class="tab-btn active" onclick="switchTab('tarefas')">Tarefas & Código</button>
     <button class="tab-btn" onclick="switchTab('lore')">Lore Timeline</button>
     <button class="tab-btn" onclick="switchTab('rotina')">Formular Rotina</button>
   </div>
 
-  <!-- TAB: TAREFAS -->
   <div id="tab-tarefas" class="tab-content active">
     <div class="grid-2">
-      <!-- Form Container -->
       <div class="card glass">
         <h2>Nova Tarefa</h2>
         <form id="form-atividade" onsubmit="addAtividade(event)">
@@ -302,12 +497,11 @@
         </form>
       </div>
 
-      <!-- Board Container -->
       <div class="card glass" style="display:flex; flex-direction:column;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap: wrap; gap: 10px;">
           <h2 style="margin:0;">Board de Execução</h2>
           <div style="display:flex; gap:8px;">
-            <select id="filtro-responsavel" onchange="renderAtividades()" style="padding:8px 12px; width:auto; border-radius:8px;">
+            <select id="filtro-responsavel" onchange="renderAtividades()" style="padding:8px 12px; width:auto; border-radius:8px; background: rgba(0,0,0,0.3); color: white; border: 1px solid var(--border);">
               <option value="todos">Todos</option>
               <option value="yoni">Só Yoni</option>
               <option value="schalom">Só Schalom</option>
@@ -315,26 +509,49 @@
             <button class="btn-outline" style="border-radius:8px;" onclick="limparConcluidas()">Limpar Feitas</button>
           </div>
         </div>
-        <div id="lista-atividades" style="flex:1; overflow-y:auto; max-height:420px; padding-right:10px;">
-          <!-- JS injeta as tarefas aqui -->
+
+        <div class="search-box">
+          <input type="text" id="busca-tarefas" oninput="renderAtividades()" placeholder="Buscar atividade por título ou prioridade...">
         </div>
+
+        <div id="lista-atividades" style="flex:1; overflow-y:auto; max-height:420px; padding-right:10px;">
+          </div>
       </div>
     </div>
   </div>
 
-  <!-- TAB: LORE TIMELINE -->
   <div id="tab-lore" class="tab-content">
     <div class="card glass">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
         <h2 style="margin:0;">Linha do Tempo da Lore</h2>
-        <button class="btn btn-outline" onclick="addLoreEvent()">+ Novo Evento</button>
+        <button class="btn btn-outline" onclick="showAddLoreForm()">+ Novo Evento</button>
       </div>
-      <p style="color:var(--text-secondary); margin-bottom:30px;">Schalom, organize os eventos canônicos da história aqui. A ordem visual ajuda a planejar as quests com o código.</p>
+      <p style="color:var(--text-secondary); margin-bottom:20px;">Schalom, organize os eventos canônicos da história aqui. Clique no título de qualquer evento para expandir e editar.</p>
+      
+      <div class="search-box">
+        <input type="text" id="busca-lore" oninput="renderLore()" placeholder="Buscar evento na timeline ou roteiro...">
+      </div>
+
+      <div id="inline-lore-form" class="inline-edit-panel" style="margin-bottom: 24px; background: rgba(255,255,255,0.02)">
+        <h3 style="font-size:1rem; margin-bottom:12px;">Criar Evento Canônico</h3>
+        <div class="form-group">
+          <label>Título do Evento</label>
+          <input type="text" id="new-lore-title" placeholder="Ex: A Grande Guerra de Silício">
+        </div>
+        <div class="form-group">
+          <label>Descrição do Acontecimento</label>
+          <textarea id="new-lore-desc" rows="3" placeholder="Escreva o desdobramento da quest ou lore..."></textarea>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-primary btn-sm" onclick="saveNewLoreEvent()">Salvar Evento</button>
+          <button class="btn-outline btn-sm" onclick="document.getElementById('inline-lore-form').classList.remove('active')">Cancelar</button>
+        </div>
+      </div>
+
       <div class="timeline" id="lore-timeline"></div>
     </div>
   </div>
 
-  <!-- TAB: FORMULAR ROTINA -->
   <div id="tab-rotina" class="tab-content">
     <div class="card glass">
       <h2>Gerador Visual de Rotina</h2>
@@ -359,15 +576,22 @@
       <button class="btn btn-primary" onclick="gerarRotinaVisual()">Gerar Cronograma</button>
 
       <div id="rotina-resultado" style="display:none; margin-top:40px;">
-        <h3 style="margin-bottom: 20px; font-weight: 500;">Sua Sprint Sugerida</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <h3 style="font-weight: 500;">Sua Sprint Sugerida</h3>
+          <div class="rotina-actions">
+            <button class="btn-outline" onclick="exportRotina('clipboard')">📋 Copiar para Clipboard</button>
+            <button class="btn-outline" onclick="exportRotina('markdown')">💾 Baixar .MD</button>
+          </div>
+        </div>
+        
         <div class="rotina-grid">
-          <div class="dia-card"><div class="dia-titulo">SEG</div><div id="d1"></div></div>
-          <div class="dia-card"><div class="dia-titulo">TER</div><div id="d2"></div></div>
-          <div class="dia-card"><div class="dia-titulo">QUA</div><div id="d3"></div></div>
-          <div class="dia-card"><div class="dia-titulo">QUI</div><div id="d4"></div></div>
-          <div class="dia-card"><div class="dia-titulo">SEX</div><div id="d5"></div></div>
-          <div class="dia-card" style="background:rgba(255,255,255,0.04);"><div class="dia-titulo" style="color:var(--text-primary)">SÁB</div><div id="d6"></div></div>
-          <div class="dia-card" style="background:rgba(255,255,255,0.04);"><div class="dia-titulo" style="color:var(--text-primary)">DOM</div><div id="d7"></div></div>
+          <div class="dia-card"><div class="dia-titulo">SEG</div><div id="d1" style="width:100%"></div></div>
+          <div class="dia-card"><div class="dia-titulo">TER</div><div id="d2" style="width:100%"></div></div>
+          <div class="dia-card"><div class="dia-titulo">QUA</div><div id="d3" style="width:100%"></div></div>
+          <div class="dia-card"><div class="dia-titulo">QUI</div><div id="d4" style="width:100%"></div></div>
+          <div class="dia-card"><div class="dia-titulo">SEX</div><div id="d5" style="width:100%"></div></div>
+          <div class="dia-card" style="background:rgba(255,255,255,0.04);"><div class="dia-titulo" style="color:var(--text-primary)">SÁB</div><div id="d6" style="width:100%"></div></div>
+          <div class="dia-card" style="background:rgba(255,255,255,0.04);"><div class="dia-titulo" style="color:var(--text-primary)">DOM</div><div id="d7" style="width:100%"></div></div>
         </div>
       </div>
     </div>
@@ -375,7 +599,8 @@
 
 </div>
 
-<!-- Inclusão do Supabase -->
+<div id="toast" class="toast">Ação realizada com sucesso!</div>
+
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
   // ========== CONFIGURAÇÃO SUPABASE ==========
@@ -399,28 +624,124 @@
   // ========== ESTADO GLOBAL ==========
   let tarefas = [];
   let loreEvents = JSON.parse(localStorage.getItem('gamedev_lore') || '[{"id":1,"titulo":"O Início","desc":"O personagem acorda sem memória na floresta de silício."}]');
+  
+  // Lista padrão de Milestones que o usuário pode gerenciar completamente
+  let milestonesData = JSON.parse(localStorage.getItem('gamedev_milestones_list') || '[{"id":1,"fase":"Mês 1","titulo":"Core Target"},{"id":2,"fase":"Mês 2","titulo":"Alpha Combat"},{"id":3,"fase":"Mês 3","titulo":"Beta Build"}]');
+  let currentMilestoneIndex = parseInt(localStorage.getItem('gamedev_milestone_index') || '0');
+  let currentSprintRaw = {};
 
   window.onload = async () => {
     await carregarTarefas();
     renderLore();
+    renderMilestones();
   };
 
   function switchTab(tab) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
     document.getElementById('tab-' + tab).classList.add('active');
-    document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`).classList.add('active');
+    const targetBtn = document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`);
+    if(targetBtn) targetBtn.classList.add('active');
   }
 
-  // ========== CRUD TAREFAS (SUPABASE + LOCAL FALLBACK) ==========
-  
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // ========== MILESTONES TOTALMENTE GERENCIÁVEIS & DINÂMICAS ==========
+  function toggleMilestoneForm() {
+    document.getElementById('inline-milestone-form').classList.toggle('active');
+  }
+
+  function addNewMilestone() {
+    const fase = document.getElementById('ms-input-fase').value;
+    const titulo = document.getElementById('ms-input-titulo').value;
+
+    if(!fase || !titulo) {
+      alert("Por favor, preencha o Prazo e o Objetivo da meta.");
+      return;
+    }
+
+    milestonesData.push({ id: Date.now(), fase, titulo });
+    localStorage.setItem('gamedev_milestones_list', JSON.stringify(milestonesData));
+    
+    document.getElementById('ms-input-fase').value = '';
+    document.getElementById('ms-input-titulo').value = '';
+    document.getElementById('inline-milestone-form').classList.remove('active');
+    
+    renderMilestones();
+    showToast("Nova etapa adicionada à linha do tempo!");
+  }
+
+  function deleteMilestone(id, event) {
+    event.stopPropagation(); // Impede de ativar o nó ao tentar deletar
+    milestonesData = milestonesData.filter(x => x.id !== id);
+    localStorage.setItem('gamedev_milestones_list', JSON.stringify(milestonesData));
+    
+    // Reseta o index selecionado caso caia fora do range
+    if(currentMilestoneIndex >= milestonesData.length) {
+      currentMilestoneIndex = Math.max(0, milestonesData.length - 1);
+      localStorage.setItem('gamedev_milestone_index', currentMilestoneIndex);
+    }
+    
+    renderMilestones();
+    showToast("Meta removida da linha de planejamento.");
+  }
+
+  function selectMilestone(index) {
+    currentMilestoneIndex = index;
+    localStorage.setItem('gamedev_milestone_index', currentMilestoneIndex);
+    updateMilestoneProgressLine();
+    showToast(`Projeto avançou para: ${milestonesData[index].fase}`);
+  }
+
+  function renderMilestones() {
+    const container = document.getElementById('milestones-render-target');
+    if(milestonesData.length === 0) {
+      container.innerHTML = '<p style="font-size:0.85rem; color:var(--text-secondary); width:100%; text-align:center;">Crie sua primeira meta clicando no botão acima!</p>';
+      document.getElementById('milestone-bar').style.width = '0%';
+      return;
+    }
+
+    let html = '';
+    milestonesData.forEach((ms, idx) => {
+      const isCompletedOrActive = idx <= currentMilestoneIndex ? 'active' : '';
+      const isActiveClass = idx === currentMilestoneIndex ? 'active-milestone' : '';
+
+      html += `
+        <div class="milestone-node-block ${isActiveClass}" style="width: calc(100% / ${milestonesData.length});">
+          <button class="btn-delete-milestone" onclick="deleteMilestone(${ms.id}, event)" title="Excluir meta">&times; remover</button>
+          <div class="milestone-node ${isCompletedOrActive}" onclick="selectMilestone(${idx})"></div>
+          <span class="milestone-label"><strong>${ms.fase}</strong><br>${ms.titulo}</span>
+        </div>
+      `;
+    });
+    
+    container.innerHTML = html;
+    updateMilestoneProgressLine();
+  }
+
+  function updateMilestoneProgressLine() {
+    if(milestonesData.length <= 1) {
+      document.getElementById('milestone-bar').style.width = '0%';
+      return;
+    }
+    const bar = document.getElementById('milestone-bar');
+    const percentage = (currentMilestoneIndex / (milestonesData.length - 1)) * 100;
+    bar.style.width = `${percentage}%`;
+  }
+
+
+  // ========== CRUD TAREFAS ==========
   async function carregarTarefas() {
     if (useLocal) {
       tarefas = JSON.parse(localStorage.getItem('gamedev_tarefas') || '[]');
       renderAtividades();
       return;
     }
-
     try {
       const { data, error } = await supabaseClient.from('tasks').select('*').order('id', { ascending: false });
       if (error) throw error;
@@ -455,11 +776,45 @@
       renderAtividades();
       return;
     }
-
     try {
       const payload = { title: titulo, assigned_to: responsavel, priority: prioridade, is_completed: false };
       await supabaseClient.from('tasks').insert([payload]);
-      carregarTarefas(); // recarrega a lista real do banco
+      await carregarTarefas();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function toggleEditCard(id) {
+    const panel = document.getElementById(`edit-panel-${id}`);
+    if(panel) panel.classList.toggle('active');
+  }
+
+  async function salvarEdicaoTarefa(id) {
+    const novoTitulo = document.getElementById(`edit-titulo-${id}`).value;
+    const novoResp = document.getElementById(`edit-resp-${id}`).value;
+    const novaPri = document.getElementById(`edit-pri-${id}`).value;
+
+    const t = tarefas.find(x => x.id === id);
+    if(!t) return;
+
+    if(useLocal) {
+      t.titulo = novoTitulo;
+      t.responsavel = novoResp;
+      t.prioridade = novaPri;
+      localStorage.setItem('gamedev_tarefas', JSON.stringify(tarefas));
+      renderAtividades();
+      showToast("Tarefa atualizada localmente!");
+      return;
+    }
+    try {
+      await supabaseClient.from('tasks').update({ 
+        title: novoTitulo, 
+        assigned_to: novoResp, 
+        priority: novaPri 
+      }).eq('id', id);
+      await carregarTarefas();
+      showToast("Tarefa sincronizada no Supabase!");
     } catch (err) {
       console.error(err);
     }
@@ -475,10 +830,9 @@
       renderAtividades();
       return;
     }
-
     try {
       await supabaseClient.from('tasks').update({ is_completed: !t.concluida }).eq('id', id);
-      carregarTarefas();
+      await carregarTarefas();
     } catch (err) {
       console.error(err);
     }
@@ -491,12 +845,11 @@
       renderAtividades();
       return;
     }
-
     try {
       const idsParaExcluir = tarefas.filter(t => t.concluida).map(t => t.id);
       if (idsParaExcluir.length > 0) {
         await supabaseClient.from('tasks').delete().in('id', idsParaExcluir);
-        carregarTarefas();
+        await carregarTarefas();
       }
     } catch (err) {
       console.error(err);
@@ -506,11 +859,15 @@
   function renderAtividades() {
     const lista = document.getElementById('lista-atividades');
     const filtro = document.getElementById('filtro-responsavel').value;
+    const termoBusca = document.getElementById('busca-tarefas').value.toLowerCase();
     
     let html = '';
     tarefas.forEach(t => {
       if(filtro !== 'todos' && t.responsavel !== filtro && t.responsavel !== 'ambos') return;
       
+      const matchesSearch = t.titulo.toLowerCase().includes(termoBusca) || t.prioridade.toLowerCase().includes(termoBusca);
+      if(!matchesSearch) return;
+
       const tagClass = t.responsavel;
       const respNome = t.responsavel.charAt(0).toUpperCase() + t.responsavel.slice(1);
       
@@ -520,78 +877,198 @@
             <span class="tag ${tagClass}">${respNome}</span>
             <span class="tag pri">${t.prioridade.toUpperCase()}</span>
           </div>
-          <div class="titulo-tarefa">${t.titulo}</div>
+          <div class="titulo-tarefa" onclick="toggleEditCard(${t.id})" title="Clique para editar">${t.titulo} 📝</div>
+          
+          <div id="edit-panel-${t.id}" class="inline-edit-panel">
+            <div class="form-group" style="margin-bottom:10px;">
+              <input type="text" id="edit-titulo-${t.id}" value="${t.titulo}" style="padding:8px;">
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+              <select id="edit-resp-${t.id}" style="padding:8px; font-size:0.85rem;">
+                <option value="yoni" ${t.responsavel === 'yoni' ? 'selected':''}>Yoni</option>
+                <option value="schalom" ${t.responsavel === 'schalom' ? 'selected':''}>Schalom</option>
+                <option value="ambos" ${t.responsavel === 'ambos' ? 'selected':''}>Ambos</option>
+              </select>
+              <select id="edit-pri-${t.id}" style="padding:8px; font-size:0.85rem;">
+                <option value="alta" ${t.prioridade === 'alta' ? 'selected':''}>Alta</option>
+                <option value="media" ${t.prioridade === 'media' ? 'selected':''}>Média</option>
+                <option value="baixa" ${t.prioridade === 'baixa' ? 'selected':''}>Baixa</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="salvarEdicaoTarefa(${t.id})">Atualizar</button>
+          </div>
+
           <button class="acao-btn" onclick="toggleTarefa(${t.id})">
             ${t.concluida ? 'Desfazer' : 'Marcar como Feito'}
           </button>
         </div>
       `;
     });
-    lista.innerHTML = html || '<p style="text-align:center; color:var(--text-secondary); padding:30px 0;">Board limpo. GG!</p>';
+    lista.innerHTML = html || '<p style="text-align:center; color:var(--text-secondary); padding:30px 0;">Nenhuma atividade encontrada.</p>';
   }
 
-  // ========== LORE (Mantido em LocalStorage para simplicidade do protótipo) ==========
-  function addLoreEvent() {
-    const titulo = prompt("Título do Evento (Ex: A Grande Guerra):");
-    if(!titulo) return;
-    const desc = prompt("Descrição breve do que acontece:");
-    if(!desc) return;
+
+  // ========== LORE AND RESOURCE TIMELINE ==========
+  function showAddLoreForm() {
+    document.getElementById('inline-lore-form').classList.toggle('active');
+  }
+
+  function saveNewLoreEvent() {
+    const titulo = document.getElementById('new-lore-title').value;
+    const desc = document.getElementById('new-lore-desc').value;
+    
+    if(!titulo || !desc) {
+      alert("Preencha o título e a descrição do evento.");
+      return;
+    }
+    
     loreEvents.push({ id: Date.now(), titulo, desc });
     localStorage.setItem('gamedev_lore', JSON.stringify(loreEvents));
+    
+    document.getElementById('new-lore-title').value = '';
+    document.getElementById('new-lore-desc').value = '';
+    document.getElementById('inline-lore-form').classList.remove('active');
+    
     renderLore();
+    showToast("Novo capítulo inserido na história!");
+  }
+
+  function toggleEditLoreCard(id) {
+    const element = document.getElementById(`edit-lore-${id}`);
+    if(element) element.classList.toggle('active');
+  }
+
+  function salvarEdicaoLore(id) {
+    const nTitle = document.getElementById(`input-lore-title-${id}`).value;
+    const nDesc = document.getElementById(`input-lore-desc-${id}`).value;
+    
+    const ev = loreEvents.find(x => x.id === id);
+    if(ev) {
+      ev.titulo = nTitle;
+      ev.desc = nDesc;
+      localStorage.setItem('gamedev_lore', JSON.stringify(loreEvents));
+      renderLore();
+      showToast("Capítulo atualizado com sucesso!");
+    }
   }
 
   function removerLore(id) {
-    if(confirm('Excluir este evento da lore?')) {
-      loreEvents = loreEvents.filter(x => x.id !== id);
-      localStorage.setItem('gamedev_lore', JSON.stringify(loreEvents));
-      renderLore();
-    }
+    loreEvents = loreEvents.filter(x => x.id !== id);
+    localStorage.setItem('gamedev_lore', JSON.stringify(loreEvents));
+    renderLore();
+    showToast("Capítulo removido.");
   }
 
   function renderLore() {
     const container = document.getElementById('lore-timeline');
+    const termoBusca = document.getElementById('busca-lore').value.toLowerCase();
     let html = '';
+    
     loreEvents.forEach((ev, index) => {
+      const matchesSearch = ev.titulo.toLowerCase().includes(termoBusca) || ev.desc.toLowerCase().includes(termoBusca);
+      if(!matchesSearch) return;
+
       html += `
         <div class="timeline-item">
           <div class="lore-content">
-            <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-              <h3 style="color:var(--text-primary); font-size:1.1rem; font-weight:600;">Capítulo ${index + 1}: ${ev.titulo}</h3>
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items: center;">
+              <h3 style="color:var(--text-primary); font-size:1.1rem; font-weight:600; cursor:pointer;" onclick="toggleEditLoreCard(${ev.id})" title="Clique para editar">
+                Capítulo ${index + 1}: ${ev.titulo} 📝
+              </h3>
               <button onclick="removerLore(${ev.id})" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.2rem;">&times;</button>
             </div>
             <p style="font-size:0.95rem; line-height:1.6; color:var(--text-secondary)">${ev.desc}</p>
+            
+            <div id="edit-lore-${ev.id}" class="inline-edit-panel">
+              <div class="form-group" style="margin-bottom:8px;">
+                <input type="text" id="input-lore-title-${ev.id}" value="${ev.titulo}">
+              </div>
+              <div class="form-group" style="margin-bottom:8px;">
+                <textarea id="input-lore-desc-${ev.id}" rows="2">${ev.desc}</textarea>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="salvarEdicaoLore(${ev.id})">Salvar Mudanças</button>
+            </div>
           </div>
         </div>
       `;
     });
-    container.innerHTML = html;
+    container.innerHTML = html || '<p style="color:var(--text-secondary)">Nenhum evento encontrado.</p>';
   }
 
-  // ========== ROTINA VISUAL ==========
+
+  // ========== GERADOR DE ROTINA E EXPORTADORES ==========
   function gerarRotinaVisual() {
     document.getElementById('rotina-resultado').style.display = 'block';
     const perfil = document.getElementById('rotina-horas').value;
     
     for(let i=1; i<=7; i++) document.getElementById(`d${i}`).innerHTML = '';
     
-    const blockYoni = (texto) => `<div class="block yoni">YONI<br>${texto}</div>`;
-    const blockSchalom = (texto) => `<div class="block schalom">SCHA<br>${texto}</div>`;
-    const blockAmbos = (texto) => `<div class="block reuniao">PLAYTEST<br>${texto}</div>`;
+    const blockYoni = (texto) => `<div class="block yoni"><strong>YONI</strong><br>${texto}</div>`;
+    const blockSchalom = (texto) => `<div class="block schalom"><strong>SCHA</strong><br>${texto}</div>`;
+    const blockAmbos = (texto) => `<div class="block reuniao"><strong>AMBOS</strong><br>${texto}</div>`;
 
     if(perfil === 'pro') {
+      currentSprintRaw = {
+        SEG: ["Yoni: Lógica Base", "Schalom: Escrever Quests"],
+        TER: ["Yoni: Sistemas Core (2h)"],
+        QUA: ["Schalom: Revisão de Roteiro (2h)"],
+        QUI: ["Yoni: Refatoração de Código", "Schalom: Diálogos"],
+        SEX: ["Ambos: Alinhamento Técnico (1h)"],
+        SAB: ["Yoni: Implementações Gerais (4h)", "Schalom: Level Design Visual (4h)"],
+        DOM: ["Ambos: Playtest & Validação"]
+      };
+
       document.getElementById('d1').innerHTML = blockYoni('Lógica Base') + blockSchalom('Escrever Quests');
-      document.getElementById('d2').innerHTML = blockYoni('Sistemas (2h)');
-      document.getElementById('d3').innerHTML = blockSchalom('Revisão Lore (2h)');
+      document.getElementById('d2').innerHTML = blockYoni('Sistemas Core (2h)');
+      document.getElementById('d3').innerHTML = blockSchalom('Revisão Roteiro (2h)');
       document.getElementById('d4').innerHTML = blockYoni('Refatoração') + blockSchalom('Diálogos');
       document.getElementById('d5').innerHTML = blockAmbos('Alinhamento (1h)');
       document.getElementById('d6').innerHTML = blockYoni('Implementação (4h)') + blockSchalom('Level Design (4h)');
-      document.getElementById('d7').innerHTML = blockAmbos('Jogar a Build');
+      document.getElementById('d7').innerHTML = blockAmbos('Jogar a Build & Ajustes');
     } else {
+      currentSprintRaw = {
+        SEG: ["Descanso"], TER: ["Descanso"],
+        QUA: ["Yoni: Estudo Unity", "Schalom: Expansão de Universo"],
+        QUI: ["Descanso"], SEX: ["Descanso"],
+        SAB: ["Yoni: Código Massivo (4h)", "Schalom: Mapeamento de Missões (4h)"],
+        DOM: ["Ambos: Sincronizar Estruturas & Testes"]
+      };
+
       document.getElementById('d1').innerHTML = '<span style="font-size:0.8rem; color:var(--text-secondary)">Descanso</span>';
+      document.getElementById('d2').innerHTML = '<span style="font-size:0.8rem; color:var(--text-secondary)">Descanso</span>';
       document.getElementById('d3').innerHTML = blockYoni('Estudo Unity (1h)') + blockSchalom('Estudo Lore (1h)');
+      document.getElementById('d4').innerHTML = '<span style="font-size:0.8rem; color:var(--text-secondary)">Descanso</span>';
+      document.getElementById('d5').innerHTML = '<span style="font-size:0.8rem; color:var(--text-secondary)">Descanso</span>';
       document.getElementById('d6').innerHTML = blockYoni('Código (4h)') + blockSchalom('Mundo (4h)');
       document.getElementById('d7').innerHTML = blockAmbos('Sincronizar & Testar');
+    }
+  }
+
+  function construirMarkdownRotina() {
+    let md = `# 📅 Cronograma de Sprint Sugerido\n\n`;
+    for (const [dia, afazeres] of Object.entries(currentSprintRaw)) {
+      md += `### 🗓️ ${dia}\n`;
+      afazeres.forEach(item => { md += `- ${item}\n`; });
+      md += `\n`;
+    }
+    return md;
+  }
+
+  function exportRotina(modo) {
+    const textoMarkdown = construirMarkdownRotina();
+    if(modo === 'clipboard') {
+      navigator.clipboard.writeText(textoMarkdown).then(() => {
+        showToast("Markdown copiado para a área de transferência!");
+      });
+    } else if(modo === 'markdown') {
+      const blob = new Blob([textoMarkdown], { type: 'text/markdown;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute("download", "gamedev_sprint_planner.md");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Download do arquivo .md iniciado!");
     }
   }
 </script>
