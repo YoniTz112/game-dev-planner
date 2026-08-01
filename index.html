@@ -601,39 +601,36 @@
 
 <div id="toast" class="toast">Ação realizada com sucesso!</div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
-  // ========== CONFIGURAÇÃO SUPABASE ==========
-  const SUPABASE_URL = 'https://uhljjblxpeaseiqovwwu.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVobGpqYmx4cGVhc2VpcW92d3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNDMzODYsImV4cCI6MjA5NzYxOTM4Nn0.p0vo0IYg9VcWFCjkrJk3CnXZlxA_OG1kzYWhgyVxkHE';
+  // ========== CONFIGURAÇÃO FIREBASE ==========
+  // COLE O SEU CONFIG AQUI DENTRO:
+  const firebaseConfig = {
+    apiKey: "AIzaSyBv49FGzB06u_KRi-O_DszamArqC3fNby4",
+    authDomain: "SEU_Pgame-planner-7cfb3.firebaseapp.com",
+    projectId: "game-planner-7cfb3",
+    storageBucket: "game-planner-7cfb3.firebasestorage.app.appspot.com",
+    messagingSenderId: "311206653786",
+    appId: "1:1:311206653786:web:eed2e7ec6586f514258d63:web:abcdef",
+    measurementId: "G-3RFNRBL5QL"
+  };
   
-  let supabaseClient = null;
-  let useLocal = false;
-  
-  try {
-    if (window.supabase) {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } else {
-      throw new Error('Supabase library não carregada');
-    }
-  } catch (err) {
-    console.warn('Rodando em modo LocalStorage (Supabase inacessível).', err);
-    useLocal = true;
-  }
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
   // ========== ESTADO GLOBAL ==========
   let tarefas = [];
-  let loreEvents = JSON.parse(localStorage.getItem('gamedev_lore') || '[{"id":1,"titulo":"O Início","desc":"O personagem acorda sem memória na floresta de silício."}]');
+  let loreEvents = [];
+  let milestonesData = [];
   
-  // Lista padrão de Milestones que o usuário pode gerenciar completamente
-  let milestonesData = JSON.parse(localStorage.getItem('gamedev_milestones_list') || '[{"id":1,"fase":"Mês 1","titulo":"Core Target"},{"id":2,"fase":"Mês 2","titulo":"Alpha Combat"},{"id":3,"fase":"Mês 3","titulo":"Beta Build"}]');
   let currentMilestoneIndex = parseInt(localStorage.getItem('gamedev_milestone_index') || '0');
   let currentSprintRaw = {};
 
   window.onload = async () => {
     await carregarTarefas();
-    renderLore();
-    renderMilestones();
+    await carregarLore();
+    await carregarMilestones();
   };
 
   function switchTab(tab) {
@@ -651,51 +648,50 @@
     setTimeout(() => toast.classList.remove('show'), 2500);
   }
 
-  // ========== MILESTONES TOTALMENTE GERENCIÁVEIS & DINÂMICAS ==========
+  // ========== MILESTONES ==========
+  async function carregarMilestones() {
+    const snapshot = await db.collection('milestones').orderBy('createdAt', 'asc').get();
+    milestonesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderMilestones();
+  }
+
   function toggleMilestoneForm() {
     document.getElementById('inline-milestone-form').classList.toggle('active');
   }
 
-  function addNewMilestone() {
+  async function addNewMilestone() {
     const fase = document.getElementById('ms-input-fase').value;
     const titulo = document.getElementById('ms-input-titulo').value;
 
-    if(!fase || !titulo) {
-      alert("Por favor, preencha o Prazo e o Objetivo da meta.");
-      return;
-    }
+    if(!fase || !titulo) return alert("Preencha o Prazo e o Objetivo.");
 
-    milestonesData.push({ id: Date.now(), fase, titulo });
-    localStorage.setItem('gamedev_milestones_list', JSON.stringify(milestonesData));
+    await db.collection('milestones').add({ fase, titulo, createdAt: Date.now() });
     
     document.getElementById('ms-input-fase').value = '';
     document.getElementById('ms-input-titulo').value = '';
     document.getElementById('inline-milestone-form').classList.remove('active');
     
-    renderMilestones();
-    showToast("Nova etapa adicionada à linha do tempo!");
+    await carregarMilestones();
+    showToast("Nova etapa adicionada!");
   }
 
-  function deleteMilestone(id, event) {
-    event.stopPropagation(); // Impede de ativar o nó ao tentar deletar
-    milestonesData = milestonesData.filter(x => x.id !== id);
-    localStorage.setItem('gamedev_milestones_list', JSON.stringify(milestonesData));
-    
-    // Reseta o index selecionado caso caia fora do range
-    if(currentMilestoneIndex >= milestonesData.length) {
-      currentMilestoneIndex = Math.max(0, milestonesData.length - 1);
+  async function deleteMilestone(id, event) {
+    event.stopPropagation();
+    await db.collection('milestones').doc(id).delete();
+
+    if(currentMilestoneIndex >= milestonesData.length - 1) {
+      currentMilestoneIndex = Math.max(0, milestonesData.length - 2);
       localStorage.setItem('gamedev_milestone_index', currentMilestoneIndex);
     }
-    
-    renderMilestones();
-    showToast("Meta removida da linha de planejamento.");
+    await carregarMilestones();
+    showToast("Meta removida.");
   }
 
   function selectMilestone(index) {
     currentMilestoneIndex = index;
     localStorage.setItem('gamedev_milestone_index', currentMilestoneIndex);
     updateMilestoneProgressLine();
-    showToast(`Projeto avançou para: ${milestonesData[index].fase}`);
+    showToast(`Projeto avançou de fase!`);
   }
 
   function renderMilestones() {
@@ -713,13 +709,12 @@
 
       html += `
         <div class="milestone-node-block ${isActiveClass}" style="width: calc(100% / ${milestonesData.length});">
-          <button class="btn-delete-milestone" onclick="deleteMilestone(${ms.id}, event)" title="Excluir meta">&times; remover</button>
+          <button class="btn-delete-milestone" onclick="deleteMilestone('${ms.id}', event)" title="Excluir meta">&times; remover</button>
           <div class="milestone-node ${isCompletedOrActive}" onclick="selectMilestone(${idx})"></div>
           <span class="milestone-label"><strong>${ms.fase}</strong><br>${ms.titulo}</span>
         </div>
       `;
     });
-    
     container.innerHTML = html;
     updateMilestoneProgressLine();
   }
@@ -729,36 +724,15 @@
       document.getElementById('milestone-bar').style.width = '0%';
       return;
     }
-    const bar = document.getElementById('milestone-bar');
     const percentage = (currentMilestoneIndex / (milestonesData.length - 1)) * 100;
-    bar.style.width = `${percentage}%`;
+    document.getElementById('milestone-bar').style.width = `${percentage}%`;
   }
 
-
-  // ========== CRUD TAREFAS ==========
+  // ========== TAREFAS ==========
   async function carregarTarefas() {
-    if (useLocal) {
-      tarefas = JSON.parse(localStorage.getItem('gamedev_tarefas') || '[]');
-      renderAtividades();
-      return;
-    }
-    try {
-      const { data, error } = await supabaseClient.from('tasks').select('*').order('id', { ascending: false });
-      if (error) throw error;
-      
-      tarefas = data.map(item => ({
-        id: item.id,
-        titulo: item.title,
-        responsavel: item.assigned_to,
-        prioridade: item.priority,
-        concluida: item.is_completed
-      }));
-      renderAtividades();
-    } catch (err) {
-      console.error('Erro ao buscar do Supabase, caindo pro LocalStorage', err);
-      useLocal = true;
-      carregarTarefas();
-    }
+    const snapshot = await db.collection('tasks').orderBy('createdAt', 'desc').get();
+    tarefas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderAtividades();
   }
 
   async function addAtividade(e) {
@@ -767,22 +741,13 @@
     const responsavel = document.getElementById('input-responsavel').value;
     const prioridade = document.getElementById('input-prioridade').value;
     
+    await db.collection('tasks').add({ 
+      titulo, responsavel, prioridade, concluida: false, createdAt: Date.now() 
+    });
+    
     document.getElementById('input-titulo').value = '';
-
-    if (useLocal) {
-      const novaTarefa = { id: Date.now(), titulo, responsavel, prioridade, concluida: false };
-      tarefas.unshift(novaTarefa);
-      localStorage.setItem('gamedev_tarefas', JSON.stringify(tarefas));
-      renderAtividades();
-      return;
-    }
-    try {
-      const payload = { title: titulo, assigned_to: responsavel, priority: prioridade, is_completed: false };
-      await supabaseClient.from('tasks').insert([payload]);
-      await carregarTarefas();
-    } catch (err) {
-      console.error(err);
-    }
+    await carregarTarefas();
+    showToast("Tarefa adicionada!");
   }
 
   function toggleEditCard(id) {
@@ -791,68 +756,32 @@
   }
 
   async function salvarEdicaoTarefa(id) {
-    const novoTitulo = document.getElementById(`edit-titulo-${id}`).value;
-    const novoResp = document.getElementById(`edit-resp-${id}`).value;
-    const novaPri = document.getElementById(`edit-pri-${id}`).value;
+    const titulo = document.getElementById(`edit-titulo-${id}`).value;
+    const responsavel = document.getElementById(`edit-resp-${id}`).value;
+    const prioridade = document.getElementById(`edit-pri-${id}`).value;
 
-    const t = tarefas.find(x => x.id === id);
-    if(!t) return;
-
-    if(useLocal) {
-      t.titulo = novoTitulo;
-      t.responsavel = novoResp;
-      t.prioridade = novaPri;
-      localStorage.setItem('gamedev_tarefas', JSON.stringify(tarefas));
-      renderAtividades();
-      showToast("Tarefa atualizada localmente!");
-      return;
-    }
-    try {
-      await supabaseClient.from('tasks').update({ 
-        title: novoTitulo, 
-        assigned_to: novoResp, 
-        priority: novaPri 
-      }).eq('id', id);
-      await carregarTarefas();
-      showToast("Tarefa sincronizada no Supabase!");
-    } catch (err) {
-      console.error(err);
-    }
+    await db.collection('tasks').doc(id).update({ titulo, responsavel, prioridade });
+    await carregarTarefas();
+    showToast("Tarefa atualizada!");
   }
 
   async function toggleTarefa(id) {
     const t = tarefas.find(x => x.id === id);
     if(!t) return;
-    
-    if (useLocal) {
-      t.concluida = !t.concluida;
-      localStorage.setItem('gamedev_tarefas', JSON.stringify(tarefas));
-      renderAtividades();
-      return;
-    }
-    try {
-      await supabaseClient.from('tasks').update({ is_completed: !t.concluida }).eq('id', id);
-      await carregarTarefas();
-    } catch (err) {
-      console.error(err);
-    }
+    await db.collection('tasks').doc(id).update({ concluida: !t.concluida });
+    await carregarTarefas();
   }
 
   async function limparConcluidas() {
-    if (useLocal) {
-      tarefas = tarefas.filter(t => !t.concluida);
-      localStorage.setItem('gamedev_tarefas', JSON.stringify(tarefas));
-      renderAtividades();
-      return;
-    }
-    try {
-      const idsParaExcluir = tarefas.filter(t => t.concluida).map(t => t.id);
-      if (idsParaExcluir.length > 0) {
-        await supabaseClient.from('tasks').delete().in('id', idsParaExcluir);
-        await carregarTarefas();
-      }
-    } catch (err) {
-      console.error(err);
+    const concluidas = tarefas.filter(t => t.concluida);
+    if (concluidas.length > 0) {
+      const batch = db.batch();
+      concluidas.forEach(t => {
+        batch.delete(db.collection('tasks').doc(t.id));
+      });
+      await batch.commit();
+      await carregarTarefas();
+      showToast("Limpeza concluída!");
     }
   }
 
@@ -864,20 +793,17 @@
     let html = '';
     tarefas.forEach(t => {
       if(filtro !== 'todos' && t.responsavel !== filtro && t.responsavel !== 'ambos') return;
-      
-      const matchesSearch = t.titulo.toLowerCase().includes(termoBusca) || t.prioridade.toLowerCase().includes(termoBusca);
-      if(!matchesSearch) return;
+      if(!(t.titulo.toLowerCase().includes(termoBusca) || t.prioridade.toLowerCase().includes(termoBusca))) return;
 
-      const tagClass = t.responsavel;
       const respNome = t.responsavel.charAt(0).toUpperCase() + t.responsavel.slice(1);
       
       html += `
         <div class="atividade-card resp-${t.responsavel} ${t.concluida ? 'concluida' : ''}">
           <div class="tag-container">
-            <span class="tag ${tagClass}">${respNome}</span>
+            <span class="tag ${t.responsavel}">${respNome}</span>
             <span class="tag pri">${t.prioridade.toUpperCase()}</span>
           </div>
-          <div class="titulo-tarefa" onclick="toggleEditCard(${t.id})" title="Clique para editar">${t.titulo} 📝</div>
+          <div class="titulo-tarefa" onclick="toggleEditCard('${t.id}')" title="Clique para editar">${t.titulo} 📝</div>
           
           <div id="edit-panel-${t.id}" class="inline-edit-panel">
             <div class="form-group" style="margin-bottom:10px;">
@@ -895,10 +821,10 @@
                 <option value="baixa" ${t.prioridade === 'baixa' ? 'selected':''}>Baixa</option>
               </select>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="salvarEdicaoTarefa(${t.id})">Atualizar</button>
+            <button class="btn btn-primary btn-sm" onclick="salvarEdicaoTarefa('${t.id}')">Atualizar</button>
           </div>
 
-          <button class="acao-btn" onclick="toggleTarefa(${t.id})">
+          <button class="acao-btn" onclick="toggleTarefa('${t.id}')">
             ${t.concluida ? 'Desfazer' : 'Marcar como Feito'}
           </button>
         </div>
@@ -907,30 +833,31 @@
     lista.innerHTML = html || '<p style="text-align:center; color:var(--text-secondary); padding:30px 0;">Nenhuma atividade encontrada.</p>';
   }
 
+  // ========== LORE TIMELINE ==========
+  async function carregarLore() {
+    const snapshot = await db.collection('lore').orderBy('createdAt', 'asc').get();
+    loreEvents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderLore();
+  }
 
-  // ========== LORE AND RESOURCE TIMELINE ==========
   function showAddLoreForm() {
     document.getElementById('inline-lore-form').classList.toggle('active');
   }
 
-  function saveNewLoreEvent() {
+  async function saveNewLoreEvent() {
     const titulo = document.getElementById('new-lore-title').value;
-    const desc = document.getElementById('new-lore-desc').value;
+    const descricao = document.getElementById('new-lore-desc').value;
     
-    if(!titulo || !desc) {
-      alert("Preencha o título e a descrição do evento.");
-      return;
-    }
+    if(!titulo || !descricao) return alert("Preencha o título e a descrição.");
     
-    loreEvents.push({ id: Date.now(), titulo, desc });
-    localStorage.setItem('gamedev_lore', JSON.stringify(loreEvents));
+    await db.collection('lore').add({ titulo, descricao, createdAt: Date.now() });
     
     document.getElementById('new-lore-title').value = '';
     document.getElementById('new-lore-desc').value = '';
     document.getElementById('inline-lore-form').classList.remove('active');
     
-    renderLore();
-    showToast("Novo capítulo inserido na história!");
+    await carregarLore();
+    showToast("Novo capítulo inserido!");
   }
 
   function toggleEditLoreCard(id) {
@@ -938,24 +865,18 @@
     if(element) element.classList.toggle('active');
   }
 
-  function salvarEdicaoLore(id) {
-    const nTitle = document.getElementById(`input-lore-title-${id}`).value;
-    const nDesc = document.getElementById(`input-lore-desc-${id}`).value;
+  async function salvarEdicaoLore(id) {
+    const titulo = document.getElementById(`input-lore-title-${id}`).value;
+    const descricao = document.getElementById(`input-lore-desc-${id}`).value;
     
-    const ev = loreEvents.find(x => x.id === id);
-    if(ev) {
-      ev.titulo = nTitle;
-      ev.desc = nDesc;
-      localStorage.setItem('gamedev_lore', JSON.stringify(loreEvents));
-      renderLore();
-      showToast("Capítulo atualizado com sucesso!");
-    }
+    await db.collection('lore').doc(id).update({ titulo, descricao });
+    await carregarLore();
+    showToast("Capítulo atualizado!");
   }
 
-  function removerLore(id) {
-    loreEvents = loreEvents.filter(x => x.id !== id);
-    localStorage.setItem('gamedev_lore', JSON.stringify(loreEvents));
-    renderLore();
+  async function removerLore(id) {
+    await db.collection('lore').doc(id).delete();
+    await carregarLore();
     showToast("Capítulo removido.");
   }
 
@@ -965,28 +886,27 @@
     let html = '';
     
     loreEvents.forEach((ev, index) => {
-      const matchesSearch = ev.titulo.toLowerCase().includes(termoBusca) || ev.desc.toLowerCase().includes(termoBusca);
-      if(!matchesSearch) return;
+      if(!(ev.titulo.toLowerCase().includes(termoBusca) || ev.descricao.toLowerCase().includes(termoBusca))) return;
 
       html += `
         <div class="timeline-item">
           <div class="lore-content">
             <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items: center;">
-              <h3 style="color:var(--text-primary); font-size:1.1rem; font-weight:600; cursor:pointer;" onclick="toggleEditLoreCard(${ev.id})" title="Clique para editar">
+              <h3 style="color:var(--text-primary); font-size:1.1rem; font-weight:600; cursor:pointer;" onclick="toggleEditLoreCard('${ev.id}')" title="Clique para editar">
                 Capítulo ${index + 1}: ${ev.titulo} 📝
               </h3>
-              <button onclick="removerLore(${ev.id})" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.2rem;">&times;</button>
+              <button onclick="removerLore('${ev.id}')" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:1.2rem;">&times;</button>
             </div>
-            <p style="font-size:0.95rem; line-height:1.6; color:var(--text-secondary)">${ev.desc}</p>
+            <p style="font-size:0.95rem; line-height:1.6; color:var(--text-secondary)">${ev.descricao}</p>
             
             <div id="edit-lore-${ev.id}" class="inline-edit-panel">
               <div class="form-group" style="margin-bottom:8px;">
                 <input type="text" id="input-lore-title-${ev.id}" value="${ev.titulo}">
               </div>
               <div class="form-group" style="margin-bottom:8px;">
-                <textarea id="input-lore-desc-${ev.id}" rows="2">${ev.desc}</textarea>
+                <textarea id="input-lore-desc-${ev.id}" rows="2">${ev.descricao}</textarea>
               </div>
-              <button class="btn btn-primary btn-sm" onclick="salvarEdicaoLore(${ev.id})">Salvar Mudanças</button>
+              <button class="btn btn-primary btn-sm" onclick="salvarEdicaoLore('${ev.id}')">Salvar Mudanças</button>
             </div>
           </div>
         </div>
@@ -994,7 +914,6 @@
     });
     container.innerHTML = html || '<p style="color:var(--text-secondary)">Nenhum evento encontrado.</p>';
   }
-
 
   // ========== GERADOR DE ROTINA E EXPORTADORES ==========
   function gerarRotinaVisual() {
@@ -1009,12 +928,9 @@
 
     if(perfil === 'pro') {
       currentSprintRaw = {
-        SEG: ["Yoni: Lógica Base", "Schalom: Escrever Quests"],
-        TER: ["Yoni: Sistemas Core (2h)"],
-        QUA: ["Schalom: Revisão de Roteiro (2h)"],
-        QUI: ["Yoni: Refatoração de Código", "Schalom: Diálogos"],
-        SEX: ["Ambos: Alinhamento Técnico (1h)"],
-        SAB: ["Yoni: Implementações Gerais (4h)", "Schalom: Level Design Visual (4h)"],
+        SEG: ["Yoni: Lógica Base", "Schalom: Escrever Quests"], TER: ["Yoni: Sistemas Core (2h)"],
+        QUA: ["Schalom: Revisão de Roteiro (2h)"], QUI: ["Yoni: Refatoração de Código", "Schalom: Diálogos"],
+        SEX: ["Ambos: Alinhamento Técnico (1h)"], SAB: ["Yoni: Implementações Gerais (4h)", "Schalom: Level Design Visual (4h)"],
         DOM: ["Ambos: Playtest & Validação"]
       };
 
@@ -1027,10 +943,8 @@
       document.getElementById('d7').innerHTML = blockAmbos('Jogar a Build & Ajustes');
     } else {
       currentSprintRaw = {
-        SEG: ["Descanso"], TER: ["Descanso"],
-        QUA: ["Yoni: Estudo Unity", "Schalom: Expansão de Universo"],
-        QUI: ["Descanso"], SEX: ["Descanso"],
-        SAB: ["Yoni: Código Massivo (4h)", "Schalom: Mapeamento de Missões (4h)"],
+        SEG: ["Descanso"], TER: ["Descanso"], QUA: ["Yoni: Estudo Unity", "Schalom: Expansão de Universo"],
+        QUI: ["Descanso"], SEX: ["Descanso"], SAB: ["Yoni: Código Massivo (4h)", "Schalom: Mapeamento de Missões (4h)"],
         DOM: ["Ambos: Sincronizar Estruturas & Testes"]
       };
 
@@ -1057,9 +971,7 @@
   function exportRotina(modo) {
     const textoMarkdown = construirMarkdownRotina();
     if(modo === 'clipboard') {
-      navigator.clipboard.writeText(textoMarkdown).then(() => {
-        showToast("Markdown copiado para a área de transferência!");
-      });
+      navigator.clipboard.writeText(textoMarkdown).then(() => showToast("Copiado!"));
     } else if(modo === 'markdown') {
       const blob = new Blob([textoMarkdown], { type: 'text/markdown;charset=utf-8;' });
       const link = document.createElement("a");
@@ -1068,7 +980,7 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showToast("Download do arquivo .md iniciado!");
+      showToast("Download iniciado!");
     }
   }
 </script>
