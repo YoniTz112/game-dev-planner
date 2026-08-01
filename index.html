@@ -16,7 +16,7 @@
       --text-primary: #F5F5F7;
       --text-secondary: #86868B;
       
-      --accent-yoni: #0A84FF;    /* Azul Tech Premium */
+      --accent-yoni: #3b6a9a;    /* Azul Tech Premium */
       --accent-schalom: #FF453A; /* Vermelho vibrante */
       --accent-ambos: #BF5AF2;   /* Roxo luxo */
       --accent-success: #30D158; /* Verde Apple */
@@ -605,10 +605,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
   // ========== CONFIGURAÇÃO FIREBASE ==========
-  // COLE O SEU CONFIG AQUI DENTRO:
   const firebaseConfig = {
     apiKey: "AIzaSyBv49FGzB06u_KRi-O_DszamArqC3fNby4",
-    authDomain: "SEU_Pgame-planner-7cfb3.firebaseapp.com",
+    authDomain: "game-planner-7cfb3.firebaseapp.com",
     projectId: "game-planner-7cfb3",
     storageBucket: "game-planner-7cfb3.firebasestorage.app.appspot.com",
     messagingSenderId: "311206653786",
@@ -616,7 +615,9 @@
     measurementId: "G-3RFNRBL5QL"
   };
   
-  firebase.initializeApp(firebaseConfig);
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   const db = firebase.firestore();
 
   // ========== ESTADO GLOBAL ==========
@@ -627,10 +628,25 @@
   let currentMilestoneIndex = parseInt(localStorage.getItem('gamedev_milestone_index') || '0');
   let currentSprintRaw = {};
 
-  window.onload = async () => {
-    await carregarTarefas();
-    await carregarLore();
-    await carregarMilestones();
+  // ========== INICIALIZAÇÃO EM TEMPO REAL (SUPER RÁPIDO) ==========
+  window.onload = () => {
+    // 1. Ouvinte de Tarefas
+    db.collection('tasks').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+      tarefas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderAtividades();
+    }, error => alert("Erro ao carregar tarefas: " + error.message));
+
+    // 2. Ouvinte de Lore
+    db.collection('lore').orderBy('createdAt', 'asc').onSnapshot(snapshot => {
+      loreEvents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderLore();
+    }, error => alert("Erro ao carregar lore: " + error.message));
+
+    // 3. Ouvinte de Metas
+    db.collection('milestones').orderBy('createdAt', 'asc').onSnapshot(snapshot => {
+      milestonesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderMilestones();
+    }, error => alert("Erro ao carregar metas: " + error.message));
   };
 
   function switchTab(tab) {
@@ -649,12 +665,6 @@
   }
 
   // ========== MILESTONES ==========
-  async function carregarMilestones() {
-    const snapshot = await db.collection('milestones').orderBy('createdAt', 'asc').get();
-    milestonesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    renderMilestones();
-  }
-
   function toggleMilestoneForm() {
     document.getElementById('inline-milestone-form').classList.toggle('active');
   }
@@ -665,26 +675,29 @@
 
     if(!fase || !titulo) return alert("Preencha o Prazo e o Objetivo.");
 
-    await db.collection('milestones').add({ fase, titulo, createdAt: Date.now() });
-    
-    document.getElementById('ms-input-fase').value = '';
-    document.getElementById('ms-input-titulo').value = '';
-    document.getElementById('inline-milestone-form').classList.remove('active');
-    
-    await carregarMilestones();
-    showToast("Nova etapa adicionada!");
+    try {
+      await db.collection('milestones').add({ fase, titulo, createdAt: Date.now() });
+      document.getElementById('ms-input-fase').value = '';
+      document.getElementById('ms-input-titulo').value = '';
+      document.getElementById('inline-milestone-form').classList.remove('active');
+      showToast("Nova etapa adicionada!");
+    } catch(err) {
+      alert("Falha ao salvar meta: " + err.message);
+    }
   }
 
   async function deleteMilestone(id, event) {
     event.stopPropagation();
-    await db.collection('milestones').doc(id).delete();
-
-    if(currentMilestoneIndex >= milestonesData.length - 1) {
-      currentMilestoneIndex = Math.max(0, milestonesData.length - 2);
-      localStorage.setItem('gamedev_milestone_index', currentMilestoneIndex);
+    try {
+      await db.collection('milestones').doc(id).delete();
+      if(currentMilestoneIndex >= milestonesData.length - 1) {
+        currentMilestoneIndex = Math.max(0, milestonesData.length - 2);
+        localStorage.setItem('gamedev_milestone_index', currentMilestoneIndex);
+      }
+      showToast("Meta removida.");
+    } catch(err) {
+      alert("Falha ao excluir meta: " + err.message);
     }
-    await carregarMilestones();
-    showToast("Meta removida.");
   }
 
   function selectMilestone(index) {
@@ -729,25 +742,21 @@
   }
 
   // ========== TAREFAS ==========
-  async function carregarTarefas() {
-    const snapshot = await db.collection('tasks').orderBy('createdAt', 'desc').get();
-    tarefas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    renderAtividades();
-  }
-
   async function addAtividade(e) {
     e.preventDefault();
     const titulo = document.getElementById('input-titulo').value;
     const responsavel = document.getElementById('input-responsavel').value;
     const prioridade = document.getElementById('input-prioridade').value;
     
-    await db.collection('tasks').add({ 
-      titulo, responsavel, prioridade, concluida: false, createdAt: Date.now() 
-    });
-    
-    document.getElementById('input-titulo').value = '';
-    await carregarTarefas();
-    showToast("Tarefa adicionada!");
+    try {
+      await db.collection('tasks').add({ 
+        titulo, responsavel, prioridade, concluida: false, createdAt: Date.now() 
+      });
+      document.getElementById('input-titulo').value = '';
+      showToast("Tarefa adicionada!");
+    } catch(err) {
+      alert("Falha ao criar tarefa: " + err.message);
+    }
   }
 
   function toggleEditCard(id) {
@@ -760,28 +769,37 @@
     const responsavel = document.getElementById(`edit-resp-${id}`).value;
     const prioridade = document.getElementById(`edit-pri-${id}`).value;
 
-    await db.collection('tasks').doc(id).update({ titulo, responsavel, prioridade });
-    await carregarTarefas();
-    showToast("Tarefa atualizada!");
+    try {
+      await db.collection('tasks').doc(id).update({ titulo, responsavel, prioridade });
+      showToast("Tarefa atualizada!");
+    } catch(err) {
+      alert("Falha ao atualizar tarefa: " + err.message);
+    }
   }
 
   async function toggleTarefa(id) {
     const t = tarefas.find(x => x.id === id);
     if(!t) return;
-    await db.collection('tasks').doc(id).update({ concluida: !t.concluida });
-    await carregarTarefas();
+    try {
+      await db.collection('tasks').doc(id).update({ concluida: !t.concluida });
+    } catch(err) {
+      alert("Falha ao concluir tarefa: " + err.message);
+    }
   }
 
   async function limparConcluidas() {
     const concluidas = tarefas.filter(t => t.concluida);
     if (concluidas.length > 0) {
-      const batch = db.batch();
-      concluidas.forEach(t => {
-        batch.delete(db.collection('tasks').doc(t.id));
-      });
-      await batch.commit();
-      await carregarTarefas();
-      showToast("Limpeza concluída!");
+      try {
+        const batch = db.batch();
+        concluidas.forEach(t => {
+          batch.delete(db.collection('tasks').doc(t.id));
+        });
+        await batch.commit();
+        showToast("Limpeza concluída!");
+      } catch(err) {
+        alert("Falha ao limpar tarefas: " + err.message);
+      }
     }
   }
 
@@ -834,12 +852,6 @@
   }
 
   // ========== LORE TIMELINE ==========
-  async function carregarLore() {
-    const snapshot = await db.collection('lore').orderBy('createdAt', 'asc').get();
-    loreEvents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    renderLore();
-  }
-
   function showAddLoreForm() {
     document.getElementById('inline-lore-form').classList.toggle('active');
   }
@@ -850,14 +862,15 @@
     
     if(!titulo || !descricao) return alert("Preencha o título e a descrição.");
     
-    await db.collection('lore').add({ titulo, descricao, createdAt: Date.now() });
-    
-    document.getElementById('new-lore-title').value = '';
-    document.getElementById('new-lore-desc').value = '';
-    document.getElementById('inline-lore-form').classList.remove('active');
-    
-    await carregarLore();
-    showToast("Novo capítulo inserido!");
+    try {
+      await db.collection('lore').add({ titulo, descricao, createdAt: Date.now() });
+      document.getElementById('new-lore-title').value = '';
+      document.getElementById('new-lore-desc').value = '';
+      document.getElementById('inline-lore-form').classList.remove('active');
+      showToast("Novo capítulo inserido!");
+    } catch(err) {
+      alert("Falha ao salvar lore: " + err.message);
+    }
   }
 
   function toggleEditLoreCard(id) {
@@ -869,15 +882,21 @@
     const titulo = document.getElementById(`input-lore-title-${id}`).value;
     const descricao = document.getElementById(`input-lore-desc-${id}`).value;
     
-    await db.collection('lore').doc(id).update({ titulo, descricao });
-    await carregarLore();
-    showToast("Capítulo atualizado!");
+    try {
+      await db.collection('lore').doc(id).update({ titulo, descricao });
+      showToast("Capítulo atualizado!");
+    } catch(err) {
+      alert("Falha ao atualizar lore: " + err.message);
+    }
   }
 
   async function removerLore(id) {
-    await db.collection('lore').doc(id).delete();
-    await carregarLore();
-    showToast("Capítulo removido.");
+    try {
+      await db.collection('lore').doc(id).delete();
+      showToast("Capítulo removido.");
+    } catch(err) {
+      alert("Falha ao remover lore: " + err.message);
+    }
   }
 
   function renderLore() {
